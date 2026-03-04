@@ -2,60 +2,81 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay Final Elite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MilkyWay Stable Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { background: #0b0e14; color: #e0e0e0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .app { width: 350px; height: 600px; background: #141923; border: 1px solid #1f2a3d; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .screen { display: none; flex-direction: column; height: 100%; padding: 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        /* Контейнер, который не развалится */
+        .app-container { 
+            width: 350px; height: 600px; background: #141923; 
+            border: 1px solid #1f2a3d; border-radius: 20px; 
+            display: flex; flex-direction: column; overflow: hidden; position: relative;
+        }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; }
         .active { display: flex; }
-        .logo { font-size: 28px; color: #00a2ff; text-align: center; margin: 40px 0; font-weight: bold; }
-        input { background: #1c222d; border: 1px solid #30363d; padding: 12px; border-radius: 10px; color: white; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
-        button { background: #00a2ff; border: none; color: white; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
-        .user-item { padding: 15px; border-bottom: 1px solid #1f2a3d; cursor: pointer; }
-        #chat-view { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #141923; transition: 0.3s; display: flex; flex-direction: column; z-index: 5; }
-        #chat-view.open { left: 0; }
-        .messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
-        .m { padding: 8px; border-radius: 8px; max-width: 80%; font-size: 14px; }
-        .m.me { background: #00a2ff; align-self: flex-end; }
-        .m.he { background: #1c222d; align-self: flex-start; }
+
+        /* Авторизация */
+        .auth-box { padding: 40px 20px; text-align: center; }
+        .logo { font-size: 28px; color: #00a2ff; margin-bottom: 30px; font-weight: bold; text-shadow: 0 0 10px rgba(0,162,255,0.3); }
+        input { width: 100%; background: #1c222d; border: 1px solid #30363d; padding: 14px; border-radius: 10px; color: white; margin-bottom: 10px; outline: none; }
+        button { width: 100%; background: #00a2ff; border: none; color: white; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; margin-top: 5px; }
+        
+        /* Список чатов */
+        .header { padding: 15px; border-bottom: 1px solid #1f2a3d; text-align: center; color: #00a2ff; font-weight: bold; }
+        .user-list { flex: 1; overflow-y: auto; }
+        .user-item { padding: 15px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; }
+        .user-item:hover { background: #1c222d; }
+
+        /* Окно чата */
+        #chat-screen { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #141923; transition: 0.25s; z-index: 10; }
+        #chat-screen.open { left: 0; }
+        .msg-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .m { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+        .m.me { background: #00a2ff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .m.he { background: #1f2a3d; align-self: flex-start; border-bottom-left-radius: 2px; }
     </style>
 </head>
 <body>
 
-<div class="app">
-    <div id="auth" class="screen active">
-        <div class="logo">MilkyWay</div>
-        <input type="email" id="e" placeholder="Почта">
-        <input type="password" id="p" placeholder="Пароль (от 6 знаков)">
-        <button onclick="sign(true)">ВОЙТИ</button>
-        <button onclick="sign(false)" style="background:none; color:#555; font-size:12px;">Создать аккаунт</button>
+<div class="app-container">
+    <div id="scr-auth" class="screen active">
+        <div class="auth-box">
+            <div class="logo">MilkyWay</div>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="pass" placeholder="Пароль">
+            <button onclick="authAction(true)">ВОЙТИ</button>
+            <button onclick="authAction(false)" style="background:none; color:#555; text-decoration:underline; font-size:12px;">Создать аккаунт</button>
+        </div>
     </div>
 
-    <div id="main" class="screen" style="padding:0;">
-        <div style="padding:15px; border-bottom:1px solid #1f2a3d; text-align:center; color:#00a2ff;">Чаты</div>
-        <div id="list" style="flex:1; overflow-y:auto;"></div>
+    <div id="scr-main" class="screen">
+        <div class="header">ЧАТЫ</div>
+        <div class="user-list" id="contacts"></div>
         <button onclick="auth.signOut()" style="background:#ff4b4b; border-radius:0;">ВЫЙТИ</button>
     </div>
 
-    <div id="chat-view">
-        <div style="padding:15px; background:#1c222d; display:flex; justify-content:space-between;">
-            <span onclick="closeChat()" style="cursor:pointer;">⬅ Назад</span>
-            <span id="chat-title"></span>
+    <div id="chat-screen" class="screen">
+        <div class="header" style="display:flex; justify-content:space-between; align-items:center; padding: 10px 15px;">
+            <span onclick="toggleChat(false)" style="cursor:pointer; color:#888;">⬅ Назад</span>
+            <span id="chat-target">Чат</span>
+            <div style="width:40px;"></div>
         </div>
-        <div id="msgs" class="messages"></div>
-        <div style="padding:10px; display:flex; gap:5px;">
-            <input type="text" id="m-in" placeholder="Сообщение..." style="margin:0;">
-            <button onclick="send()" style="width:60px;">➤</button>
+        <div class="msg-container" id="messages"></div>
+        <div style="padding:10px; display:flex; gap:5px; background:#1a202c;">
+            <input type="text" id="msg-input" placeholder="Сообщение..." style="margin:0;">
+            <button onclick="sendMsg()" style="width:60px; margin:0;">➤</button>
         </div>
     </div>
 </div>
 
 <script>
-    const config = {
+    const firebaseConfig = {
         apiKey: "AIzaSyA-bMCUsWhvoMO6uBMV9Z2NKZjvqFNwjeQ",
         authDomain: "wm-message.firebaseapp.com",
         databaseURL: "https://wm-message-default-rtdb.firebaseio.com",
@@ -64,59 +85,61 @@
         messagingSenderId: "573728159190",
         appId: "1:573728159190:web:96856417745778a487ed53"
     };
-    firebase.initializeApp(config);
+    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.database();
-    let curChat = null;
+    let activeChatId = null;
 
-    async function sign(isIn) {
-        const mail = document.getElementById('e').value, pass = document.getElementById('p').value;
+    async function authAction(login) {
+        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        if(p.length < 6) return alert("Пароль от 6 символов");
         try {
-            if(isIn) await auth.signInWithEmailAndPassword(mail, pass);
+            if(login) await auth.signInWithEmailAndPassword(e, p);
             else {
-                const r = await auth.createUserWithEmailAndPassword(mail, pass);
-                await db.ref('users/' + r.user.uid).set({ name: mail });
+                const r = await auth.createUserWithEmailAndPassword(e, p);
+                await db.ref('users/' + r.user.uid).set({ email: e, name: e.split('@')[0] });
             }
-        } catch(e) { alert(e.message); }
+        } catch(err) { alert(err.message); }
     }
 
-    auth.onAuthStateChanged(u => {
-        document.getElementById('auth').classList.toggle('active', !u);
-        document.getElementById('main').classList.toggle('active', !!u);
-        if(u) loadUsers();
+    auth.onAuthStateChanged(user => {
+        document.getElementById('scr-auth').classList.toggle('active', !user);
+        document.getElementById('scr-main').classList.toggle('active', !!user);
+        if(user) loadContacts();
     });
 
-    function loadUsers() {
+    function loadContacts() {
         db.ref('users').on('value', s => {
-            const l = document.getElementById('list'); l.innerHTML = '';
-            s.forEach(user => {
-                if(user.key !== auth.currentUser.uid) {
-                    l.innerHTML += `<div class="user-item" onclick="openChat('${user.key}','${user.val().name}')">👤 ${user.val().name}</div>`;
+            const list = document.getElementById('contacts'); list.innerHTML = '';
+            s.forEach(u => {
+                if(u.key !== auth.currentUser.uid) {
+                    list.innerHTML += `<div class="user-item" onclick="openChat('${u.key}','${u.val().name}')">👤 ${u.val().name}</div>`;
                 }
             });
         });
     }
 
     function openChat(id, name) {
-        curChat = id; document.getElementById('chat-title').innerText = name;
-        document.getElementById('chat-view').classList.add('open');
-        const cId = [auth.currentUser.uid, id].sort().join('_');
-        db.ref('msgs/' + cId).on('value', s => {
-            const mBox = document.getElementById('msgs'); mBox.innerHTML = '';
+        activeChatId = id;
+        document.getElementById('chat-target').innerText = name;
+        toggleChat(true);
+        const chatUID = [auth.currentUser.uid, id].sort().join('_');
+        db.ref('chats/' + chatUID).on('value', s => {
+            const box = document.getElementById('messages'); box.innerHTML = '';
             s.forEach(m => {
                 const isMe = m.val().from === auth.currentUser.uid;
-                mBox.innerHTML += `<div class="m ${isMe?'me':'he'}">${m.val().txt}</div>`;
+                box.innerHTML += `<div class="m ${isMe?'me':'he'}">${m.val().txt}</div>`;
             });
-            mBox.scrollTop = mBox.scrollHeight;
+            box.scrollTop = box.scrollHeight;
         });
     }
 
-    function closeChat() { document.getElementById('chat-view').classList.remove('open'); }
+    function toggleChat(show) { document.getElementById('chat-screen').classList.toggle('open', show); }
 
-    function send() {
-        const t = document.getElementById('m-in').value; if(!t) return;
-        const cId = [auth.currentUser.uid, curChat].sort().join('_');
-        db.ref('msgs/' + cId).push({ from: auth.currentUser.uid, txt: t });
-        document.getElementById('m-in').value = '';
+    function sendMsg() {
+        const t = document.getElementById('msg-input').value; if(!t) return;
+        const chatUID = [auth.currentUser.uid, activeChatId].sort().join('_');
+        db.ref('chats/' + chatUID).push({ from: auth.currentUser.uid, txt: t, ts: Date.now() });
+        document.getElementById('msg-input').value = '';
     }
 </script>
 </body>
