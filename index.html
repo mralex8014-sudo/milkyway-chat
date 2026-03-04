@@ -3,54 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay Messenger</title>
+    <title>MilkyWay Elite Messenger</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        
-        .app-container { width: 350px; height: 600px; background: #141923; border: 1px solid #1f2a3d; border-radius: 20px; position: relative; display: flex; flex-direction: column; box-shadow: 0 0 40px rgba(0, 162, 255, 0.15); }
-        
-        header { width: 100%; padding: 25px 0; text-align: center; border-bottom: 1px solid #1f2a3d; }
-        header h1 { margin: 0; font-size: 26px; color: #00a2ff; letter-spacing: 1px; }
+        body { 
+            background: #0b0e14; 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+        }
 
-        .screen { display: none; width: 100%; height: 100%; padding: 20px; flex-direction: column; align-items: center; justify-content: center; }
+        /* Тот самый контейнер из твоих первых скринов */
+        .app-container { 
+            width: 360px; 
+            height: 640px; 
+            background: #141923; 
+            border: 1px solid #1f2a3d; 
+            border-radius: 25px; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 0 50px rgba(0, 162, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .screen { 
+            display: none; 
+            width: 100%; 
+            height: 100%; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 30px; 
+        }
         .active { display: flex; }
 
-        input { width: 100%; background: #1c222d; border: 1px solid #30363d; padding: 14px; border-radius: 10px; color: white; margin-bottom: 12px; outline: none; font-size: 14px; }
-        button { width: 100%; background: #00a2ff; border: none; color: white; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s; }
-        button:hover { background: #0081cc; transform: translateY(-1px); }
+        .logo { 
+            font-size: 32px; 
+            font-weight: bold; 
+            color: #00a2ff; 
+            margin-bottom: 40px; 
+            text-shadow: 0 0 15px rgba(0, 162, 255, 0.6); 
+        }
 
-        #recaptcha-container { margin: 10px 0; transform: scale(0.9); }
+        input { 
+            width: 100%; 
+            background: #1c222d; 
+            border: 1px solid #30363d; 
+            padding: 15px; 
+            border-radius: 12px; 
+            color: white; 
+            margin-bottom: 15px; 
+            outline: none; 
+            text-align: center;
+        }
+
+        button { 
+            width: 100%; 
+            background: #00a2ff; 
+            border: none; 
+            color: white; 
+            padding: 15px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: 0.3s;
+        }
+        button:hover { background: #0081cc; box-shadow: 0 0 20px rgba(0, 162, 255, 0.4); }
+
+        #recaptcha-container { margin: 10px 0; transform: scale(0.85); }
         
-        .user-list { width: 100%; flex: 1; overflow-y: auto; padding-top: 10px; }
-        .user-card { padding: 15px; border-bottom: 1px solid #1c222d; display: flex; align-items: center; gap: 12px; }
+        .user-list { width: 100%; flex: 1; overflow-y: auto; }
+        .user-item { padding: 20px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .user-item:hover { background: #1c222d; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div id="scr-auth" class="screen active">
-        <header style="position: absolute; top: 0;"><h1>MilkyWay</h1></header>
-        
-        <div style="width: 100%; text-align: center;">
-            <input type="text" id="login-val" placeholder="Email или +7...">
-            <div id="recaptcha-container"></div>
-            <button id="send-btn" onclick="startAuth()">ПОЛУЧИТЬ КОД</button>
+        <div class="logo">MilkyWay</div>
+        <input type="text" id="login-field" placeholder="Email или +7900...">
+        <div id="recaptcha-container"></div>
+        <button id="main-btn" onclick="sendRequest()">ПОЛУЧИТЬ КОД</button>
 
-            <div id="otp-group" style="display:none; margin-top: 15px;">
-                <input type="text" id="otp-val" placeholder="6-значный код">
-                <button onclick="confirmAuth()">ВОЙТИ</button>
-            </div>
+        <div id="otp-group" style="display:none; width: 100%; margin-top: 15px;">
+            <input type="text" id="otp-field" placeholder="Код подтверждения">
+            <button onclick="verify()">ВОЙТИ</button>
         </div>
     </div>
 
     <div id="scr-main" class="screen" style="padding: 0; justify-content: flex-start;">
-        <header><h1>Чаты</h1></header>
-        <div class="user-list" id="user-list"></div>
-        <button onclick="auth.signOut()" style="background: #ff4b4b; border-radius: 0; height: 50px;">ВЫЙТИ</button>
+        <div style="padding: 20px; border-bottom: 1px solid #1f2a3d; width: 100%; text-align: center;">
+            <h2 style="margin: 0; color: #00a2ff;">Мессенджер</h2>
+        </div>
+        <div class="user-list" id="users"></div>
+        <button onclick="auth.signOut()" style="background: #ff4b4b; border-radius: 0;">ВЫЙТИ</button>
     </div>
 </div>
 
@@ -68,45 +123,41 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Создаем капчу один раз
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 
-        'size': 'normal',
-        'callback': () => { console.log("Капча ок"); }
-    });
+    // Капча для телефона
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'normal' });
 
-    async function startAuth() {
-        const val = document.getElementById('login-val').value;
+    async function sendRequest() {
+        const val = document.getElementById('login-field').value;
         if(!val) return alert("Введите данные");
 
         try {
             if(val.includes('@')) {
-                // Email Auth
+                // Вход по почте
                 await auth.sendSignInLinkToEmail(val, {
                     url: window.location.href,
                     handleCodeInApp: true
                 });
                 window.localStorage.setItem('emailForSignIn', val);
-                alert("Ссылка отправлена на почту!");
+                alert("Ссылка для входа на почте!");
             } else {
-                // Phone Auth
+                // Вход по телефону
                 window.confirmationResult = await auth.signInWithPhoneNumber(val, window.recaptchaVerifier);
                 document.getElementById('otp-group').style.display = 'block';
-                document.getElementById('send-btn').style.display = 'none';
-                alert("Код отправлен по SMS!");
+                document.getElementById('main-btn').style.display = 'none';
             }
         } catch (e) {
-            alert("Ошибка Firebase: " + e.message + "\n\nПроверьте, включены ли методы входа в консоли!");
+            alert("Ошибка Firebase: " + e.message + "\n\nПРОВЕРЬТЕ НАСТРОЙКИ В КОНСОЛИ!");
         }
     }
 
-    async function confirmAuth() {
-        const code = document.getElementById('otp-val').value;
+    async function verify() {
+        const code = document.getElementById('otp-field').value;
         try {
             await window.confirmationResult.confirm(code);
-        } catch (e) { alert("Неверный код!"); }
+        } catch (e) { alert("Ошибка кода!"); }
     }
 
-    // Обработка ссылки из Email
+    // Слушатель ссылки из письма
     if (auth.isSignInWithEmailLink(window.location.href)) {
         let email = window.localStorage.getItem('emailForSignIn') || window.prompt('Подтвердите Email');
         auth.signInWithEmailLink(email, window.location.href).then(() => {
@@ -114,22 +165,22 @@
         });
     }
 
+    // Переключение экранов
     auth.onAuthStateChanged(user => {
         document.getElementById('scr-auth').classList.toggle('active', !user);
         document.getElementById('scr-main').classList.toggle('active', !!user);
         if(user) {
-            db.ref('users/' + user.uid).update({ name: user.email || user.phoneNumber });
+            db.ref('users/' + user.uid).set({ name: user.email || user.phoneNumber });
             loadUsers();
         }
     });
 
     function loadUsers() {
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('user-list');
-            list.innerHTML = '';
+            const list = document.getElementById('users'); list.innerHTML = '';
             snap.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
-                    list.innerHTML += `<div class="user-card"><span>👤</span> ${u.val().name}</div>`;
+                    list.innerHTML += `<div class="user-item">👤 ${u.val().name}</div>`;
                 }
             });
         });
