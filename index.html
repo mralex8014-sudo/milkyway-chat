@@ -3,96 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay Fix Elite</title>
+    <title>MilkyWay Final</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        /* ВОЗВРАЩАЕМ ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
-        body {
-            background-color: #0b0e14;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .app-container {
-            width: 350px;
-            height: 600px;
-            background: rgba(20, 25, 35, 0.95);
-            border: 1px solid #1f2a3d;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 162, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
+        body { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .app-container { width: 350px; height: 600px; background: #141923; border: 1px solid #1f2a3d; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
         header { padding: 20px; text-align: center; border-bottom: 1px solid #1f2a3d; }
-        h1 { margin: 0; font-size: 24px; color: #00a2ff; }
-
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        h1 { margin: 0; font-size: 24px; color: #00a2ff; text-shadow: 0 0 10px rgba(0,162,255,0.3); }
+        .screen { display: none; flex-direction: column; height: 100%; justify-content: center; padding: 20px; box-sizing: border-box; }
         .active { display: flex; }
-
-        .content-box {
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            flex: 1;
-            justify-content: center;
-        }
-
-        input {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 12px;
-            border-radius: 8px;
-            color: white;
-            outline: none;
-        }
-
-        button {
-            background: #00a2ff;
-            border: none;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #recaptcha-container { margin: 0 auto; scale: 0.85; }
+        input { background: #161b22; border: 1px solid #30363d; padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background: #00a2ff; border: none; color: white; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; }
+        #recaptcha-container { margin-bottom: 10px; display: flex; justify-content: center; }
+        .user-item { padding: 15px; border-bottom: 1px solid #1f2a3d; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div id="scr-auth" class="screen active">
-        <header><h1>MilkyWay</h1></header>
-        <div class="content-box">
-            <input type="text" id="login-val" placeholder="Email или +7...">
+        <header style="position: absolute; top: 0; width: 100%; left: 0;"><h1>MilkyWay</h1></header>
+        <div id="auth-form">
+            <input type="text" id="login-input" placeholder="+7... или email@mail.ru">
             <div id="recaptcha-container"></div>
-            <button id="btn-main" onclick="startAuth()">ПОЛУЧИТЬ КОД</button>
-            
-            <div id="otp-area" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
-                <input type="text" id="otp-val" placeholder="Код из SMS">
+            <button id="btn-action" onclick="handleAuth()">ОТПРАВИТЬ</button>
+            <div id="otp-group" style="display:none; margin-top:10px;">
+                <input type="text" id="otp-input" placeholder="Код из SMS">
                 <button onclick="confirmSms()">ВОЙТИ</button>
             </div>
         </div>
     </div>
 
-    <div id="scr-main" class="screen">
+    <div id="scr-main" class="screen" style="justify-content: flex-start; padding: 0;">
         <header><h1>Чаты</h1></header>
         <div id="user-list" style="flex:1; overflow-y:auto;"></div>
-        <button onclick="auth.signOut()" style="margin:15px; background:#ff4b4b">ВЫЙТИ</button>
+        <button onclick="auth.signOut()" style="background:#ff4b4b; border-radius:0;">ВЫЙТИ</button>
     </div>
 </div>
 
@@ -110,47 +58,39 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Фикс капчи
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'normal' });
 
-    async function startAuth() {
-        const val = document.getElementById('login-val').value;
+    async function handleAuth() {
+        const val = document.getElementById('login-input').value;
         try {
             if(val.includes('@')) {
-                // Вход по почте (нужно включить Email Link в консоли!)
                 await auth.sendSignInLinkToEmail(val, { url: window.location.href, handleCodeInApp: true });
                 window.localStorage.setItem('emailForSignIn', val);
-                alert("Ссылка отправлена на почту!");
+                alert("Ссылка на почте! Проверь спам.");
             } else {
-                // Вход по телефону
                 window.confirmationResult = await auth.signInWithPhoneNumber(val, window.recaptchaVerifier);
-                document.getElementById('otp-area').style.display = 'flex';
-                document.getElementById('btn-main').style.display = 'none';
+                document.getElementById('otp-group').style.display = 'block';
+                document.getElementById('btn-action').style.display = 'none';
             }
         } catch (e) { alert("Ошибка: " + e.message); }
     }
 
     async function confirmSms() {
-        const code = document.getElementById('otp-val').value;
-        try {
-            await window.confirmationResult.confirm(code);
-        } catch (e) { alert("Неверный код!"); }
+        const code = document.getElementById('otp-input').value;
+        try { await window.confirmationResult.confirm(code); } catch (e) { alert("Ошибка кода"); }
     }
 
-    // Обработка ссылки из почты
     if (auth.isSignInWithEmailLink(window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn') || window.prompt('Введите email');
+        let email = window.localStorage.getItem('emailForSignIn') || window.prompt('Подтвердите email');
         auth.signInWithEmailLink(email, window.location.href).then(() => window.localStorage.removeItem('emailForSignIn'));
     }
 
     auth.onAuthStateChanged(user => {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-auth').classList.toggle('active', !user);
+        document.getElementById('scr-main').classList.toggle('active', !!user);
         if(user) {
-            document.getElementById('scr-main').classList.add('active');
             db.ref('users/' + user.uid).update({ name: user.email || user.phoneNumber });
             loadUsers();
-        } else {
-            document.getElementById('scr-auth').classList.add('active');
         }
     });
 
@@ -159,7 +99,7 @@
             const list = document.getElementById('user-list'); list.innerHTML = '';
             snap.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
-                    list.innerHTML += `<div style="padding:15px; border-bottom:1px solid #161b22">👤 ${u.val().name}</div>`;
+                    list.innerHTML += `<div class="user-item">👤 ${u.val().name}</div>`;
                 }
             });
         });
