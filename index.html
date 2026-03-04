@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MilkyWay Ultimate</title>
+    <title>MilkyWay Ghost</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -24,6 +24,7 @@
             width: 100%; max-width: 500px; height: 100dvh; position: relative;
             background: #05070c; display: flex; flex-direction: column;
             border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+            overflow: hidden; /* Важно: предотвращает сдвиги */
         }
 
         /* --- ЛОГО И КОМЕТА --- */
@@ -45,42 +46,42 @@
 
         /* --- ШАПКА --- */
         .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
-        .header-top { display: flex; align-items: center; justify-content: space-between; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
 
-        /* --- КНОПКИ И ВВОД --- */
-        .cosmo-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-accent { background: var(--accent); color: #000; }
-        .cosmo-input { width: 100%; padding: 14px; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; }
-        .cosmo-input:focus { border-color: var(--accent); }
+        /* --- ПОИСК --- */
+        .search-container { background: var(--glass); border-radius: 12px; padding: 10px 15px; display: flex; align-items: center; border: 1px solid var(--border); }
+        .search-container input { background: none; border: none; color: #fff; flex: 1; outline: none; margin-left: 10px; font-size: 14px; }
 
-        /* --- НАВИГАЦИЯ --- */
+        /* --- НАВИГАЦИЯ (ФИКСИРОВАННАЯ) --- */
         .bottom-nav {
             height: 75px; background: #080a0f; border-top: 1px solid var(--border);
             display: flex; justify-content: space-around; align-items: center;
             position: absolute; bottom: 0; width: 100%; z-index: 100;
             padding-bottom: env(safe-area-inset-bottom);
         }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #8696a0; flex: 1; gap: 4px; cursor: pointer; }
+        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #8696a0; flex: 1; gap: 4px; cursor: pointer; transition: 0.2s; }
         .nav-tab.active { color: var(--accent); text-shadow: 0 0 10px rgba(0,210,255,0.3); }
 
+        /* --- КОНТЕНТНЫЕ СЕКЦИИ --- */
+        .scroller { flex: 1; overflow-y: auto; padding-bottom: 90px; }
+        .empty-placeholder { padding: 60px 30px; text-align: center; color: #8696a0; font-size: 14px; }
+
         /* --- ПРОФИЛЬ --- */
+        #scr-settings { z-index: 200; }
         .profile-scroll { flex: 1; overflow-y: auto; padding: 25px; padding-bottom: 100px; }
         .ava-giant { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: #1a1f2b; font-size: 40px; overflow: hidden; }
         .ava-giant img { width: 100%; height: 100%; object-fit: cover; }
-        label { display: block; margin-bottom: 8px; font-size: 13px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
+        .cosmo-input { width: 100%; padding: 14px; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; }
 
-        /* --- ЧАТ --- */
+        /* --- ЧАТ (ВЫЕЗД СПРАВА) --- */
         #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
         #scr-chat.open { transform: translateX(0); }
-        .chat-wallpaper { 
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px;
-            background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover;
-        }
-        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 80%; position: relative; z-index: 1; }
+        .chat-wallpaper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
+        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 80%; }
         .msg-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
 
-        .ava-small { width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #1a1f2b; }
+        .ava-small { width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #1a1f2b; flex-shrink: 0; }
         .ava-small i { color: var(--accent); }
         .ava-small img { width: 100%; height: 100%; object-fit: cover; }
     </style>
@@ -93,9 +94,9 @@
             <div class="logo-emblem"><i class="fas fa-meteor"></i></div>
             <span class="logo-text">MilkyWay</span>
         </div>
-        <input type="email" id="email" class="cosmo-input" placeholder="Космическая почта">
+        <input type="email" id="email" class="cosmo-input" placeholder="Email">
         <input type="password" id="pass" class="cosmo-input" placeholder="Пароль">
-        <button onclick="authRun()" class="cosmo-btn btn-accent">АКТИВИРОВАТЬ ГИПЕРПРЫЖОК</button>
+        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ВОЙТИ</button>
     </div>
 
     <div id="scr-main" class="screen">
@@ -105,25 +106,31 @@
                     <div class="logo-emblem" style="width:32px; height:32px; font-size:14px;"><i class="fas fa-meteor"></i></div>
                     <span class="logo-text" style="font-size:18px;">MilkyWay</span>
                 </div>
-                <div style="display:flex; gap:18px; color:#8696a0; font-size:18px;">
-                    <i class="fas fa-search"></i>
-                    <i class="fas fa-cog" style="cursor:pointer;" onclick="showSettings()"></i>
-                </div>
+                <i class="fas fa-cog" style="color:#8696a0; font-size:20px; cursor:pointer;" onclick="showSettings()"></i>
+            </div>
+            <div class="search-container">
+                <i class="fas fa-search" style="color:#8696a0;"></i>
+                <input type="text" id="globalSearch" placeholder="Поиск по ID, Email или Телефону" oninput="runGlobalSearch()">
             </div>
         </div>
 
-        <div id="sect-chats" class="scroller" style="flex:1; overflow-y:auto; padding-bottom:80px;">
-            <div id="list-target"></div>
+        <div id="sect-chats" class="scroller">
+            <div id="list-target">
+                <div class="empty-placeholder">
+                    <i class="fas fa-satellite fa-2x" style="margin-bottom:15px; color:var(--accent);"></i>
+                    <p>Найдите пилотов через поиск выше, чтобы начать общение</p>
+                </div>
+            </div>
         </div>
         
-        <div id="sect-status" class="scroller" style="display:none; flex:1; padding:40px; text-align:center;">
-            <i class="fas fa-circle-notch fa-spin fa-3x" style="color:var(--accent); margin-bottom:20px;"></i>
-            <p>Статусы других пилотов загружаются...</p>
+        <div id="sect-status" class="scroller" style="display:none; text-align:center; padding:50px 20px;">
+            <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent);"></i>
+            <p style="margin-top:20px; color:#8696a0;">Статусы обновляются...</p>
         </div>
 
-        <div id="sect-calls" class="scroller" style="display:none; flex:1; padding:40px; text-align:center;">
-            <i class="fas fa-phone-alt fa-3x" style="color:var(--nebula); margin-bottom:20px;"></i>
-            <p>История вызовов пуста</p>
+        <div id="sect-calls" class="scroller" style="display:none; text-align:center; padding:50px 20px;">
+            <i class="fas fa-phone-slash fa-2x" style="color:var(--nebula);"></i>
+            <p style="margin-top:20px; color:#8696a0;">Вызовов не обнаружено</p>
         </div>
 
         <nav class="bottom-nav">
@@ -137,34 +144,22 @@
         <div class="header">
             <div style="display:flex; align-items:center; gap:15px;">
                 <i class="fas fa-arrow-left" onclick="hideSettings()" style="color:var(--accent); cursor:pointer; font-size:20px;"></i>
-                <span class="logo-text" style="font-size:18px;">Настройки профиля</span>
+                <span class="logo-text" style="font-size:18px;">Профиль</span>
             </div>
         </div>
         <div class="profile-scroll">
-            <div class="ava-giant" id="my-ava-prev">
-                <i class="fas fa-user-astronaut"></i>
-            </div>
-            <center><button onclick="document.getElementById('file-up').click()" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 15px; border-radius:20px; font-size:12px; margin-bottom:25px;">Загрузить фото</button></center>
+            <div class="ava-giant" id="my-ava-prev"><i class="fas fa-user-astronaut"></i></div>
+            <center><button onclick="document.getElementById('file-up').click()" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 15px; border-radius:20px; font-size:12px; margin-bottom:25px;">Сменить фото</button></center>
             <input type="file" id="file-up" hidden onchange="uploadAva(this)">
-
-            <label>Уникальный Pilot ID</label>
+            
+            <label style="color:var(--accent); font-size:12px;">ID ПИЛОТА</label>
             <input type="text" id="set-pilot-id" class="cosmo-input" placeholder="@gagarin">
-
-            <label>Позывной (Имя)</label>
-            <input type="text" id="set-name" class="cosmo-input" placeholder="Имя пилота">
-
-            <label>Дата земного рождения</label>
+            <label style="color:var(--accent); font-size:12px;">ПОЗЫВНОЙ</label>
+            <input type="text" id="set-name" class="cosmo-input">
+            <label style="color:var(--accent); font-size:12px;">ДАТА РОЖДЕНИЯ</label>
             <input type="date" id="set-birth" class="cosmo-input">
-
-            <label>Пол</label>
-            <select id="set-gender" class="cosmo-input">
-                <option value="male">Мужской</option>
-                <option value="female">Женский</option>
-                <option value="android">Андроид / Другое</option>
-            </select>
-
-            <button onclick="saveProfile()" class="cosmo-btn btn-accent" style="margin-top:20px;">СОХРАНИТЬ ДАННЫЕ</button>
-            <button onclick="auth.signOut()" style="width:100%; background:none; color:#ff4757; border:none; margin-top:30px; font-weight:bold;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
+            <button onclick="saveProfile()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">СОХРАНИТЬ</button>
+            <button onclick="auth.signOut()" style="width:100%; background:none; color:#ff4757; border:none; margin-top:30px;">ВЫЙТИ</button>
         </div>
     </div>
 
@@ -179,7 +174,6 @@
             <div style="display:flex; gap:15px; color:var(--accent); font-size:18px;">
                 <i class="fas fa-phone"></i>
                 <i class="fas fa-video"></i>
-                <i class="fas fa-ellipsis-v"></i>
             </div>
         </div>
         <div id="chat-box" class="chat-wallpaper"></div>
@@ -205,10 +199,10 @@
     const auth = firebase.auth(), db = firebase.database();
     let myId = null, selId = null;
 
-    // --- НАВИГАЦИЯ ---
+    // --- ФИКСИРОВАННАЯ НАВИГАЦИЯ ---
     function switchTab(id, el) {
         ['chats','status','calls'].forEach(t => document.getElementById('sect-'+t).style.display = 'none');
-        document.getElementById('sect-'+id).style.display = 'flex';
+        document.getElementById('sect-'+id).style.display = 'block'; // Никаких сдвигов, только отображение
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         el.classList.add('active');
     }
@@ -219,11 +213,10 @@
     // --- AUTH ---
     async function authRun() {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        try {
-            await auth.signInWithEmailAndPassword(e, p);
-        } catch {
+        try { await auth.signInWithEmailAndPassword(e, p); } 
+        catch { 
             const res = await auth.createUserWithEmailAndPassword(e, p);
-            await db.ref('users/' + res.user.uid).set({ name: e.split('@')[0], email: e, pilotId: 'id' + Math.floor(Math.random()*1000) });
+            await db.ref('users/' + res.user.uid).set({ name: e.split('@')[0], email: e, pilotId: 'pilot' + Math.floor(Math.random()*1000) });
         }
     }
 
@@ -238,55 +231,46 @@
                     document.getElementById('set-name').value = d.name || '';
                     document.getElementById('set-pilot-id').value = d.pilotId || '';
                     document.getElementById('set-birth').value = d.birth || '';
-                    document.getElementById('set-gender').value = d.gender || 'male';
                     if(d.ava) document.getElementById('my-ava-prev').innerHTML = `<img src="${d.ava}">`;
                 }
             });
-            loadUsers();
         }
     });
 
-    // --- РАБОТА С ПРОФИЛЕМ ---
-    function uploadAva(input) {
-        const file = input.files[0];
-        const r = new FileReader();
-        r.onload = e => {
-            document.getElementById('my-ava-prev').innerHTML = `<img src="${e.target.result}">`;
-            db.ref('users/' + myId).update({ ava: e.target.result });
-        };
-        r.readAsDataURL(file);
-    }
+    // --- ПРИВАТНЫЙ ПОИСК (ГЛАВНАЯ ПРАВКА) ---
+    function runGlobalSearch() {
+        const q = document.getElementById('globalSearch').value.toLowerCase().trim();
+        const list = document.getElementById('list-target');
+        
+        if (q.length < 3) {
+            list.innerHTML = `<div class="empty-placeholder"><i class="fas fa-satellite fa-2x" style="margin-bottom:15px; color:var(--accent);"></i><p>Введите минимум 3 символа для поиска пилота</p></div>`;
+            return;
+        }
 
-    function saveProfile() {
-        const up = {
-            name: document.getElementById('set-name').value,
-            pilotId: document.getElementById('set-pilot-id').value,
-            birth: document.getElementById('set-birth').value,
-            gender: document.getElementById('set-gender').value
-        };
-        db.ref('users/' + myId).update(up).then(() => {
-            alert("Бортовой журнал обновлен!");
-            hideSettings();
-        });
-    }
-
-    // --- ЧАТЫ ---
-    function loadUsers() {
-        db.ref('users').on('value', snap => {
-            const list = document.getElementById('list-target'); list.innerHTML = '';
+        db.ref('users').once('value', snap => {
+            let found = false;
+            let html = '';
             snap.forEach(u => {
-                if(u.key !== myId) {
-                    const d = u.val();
-                    list.innerHTML += `
+                const d = u.val();
+                if (u.key !== myId && (
+                    (d.name || '').toLowerCase().includes(q) ||
+                    (d.email || '').toLowerCase().includes(q) ||
+                    (d.pilotId || '').toLowerCase().includes(q) ||
+                    (d.phone || '').includes(q)
+                )) {
+                    found = true;
+                    html += `
                     <div style="padding:15px 20px; display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border);" onclick="openChat('${u.key}','${d.name}','${d.ava}')">
                         <div class="ava-small">${d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`}</div>
-                        <div><b>${d.name}</b><br><small style="color:#8696a0">ID: ${d.pilotId || 'нет'}</small></div>
+                        <div><b>${d.name}</b><br><small style="color:#8696a0">${d.pilotId || '@pilot'}</small></div>
                     </div>`;
                 }
             });
+            list.innerHTML = found ? html : `<div class="empty-placeholder"><p>Пилот не найден в базе данных Галактики</p></div>`;
         });
     }
 
+    // --- ЧАТ ---
     function openChat(id, name, ava) {
         selId = id;
         document.getElementById('c-name').innerText = name;
@@ -314,6 +298,20 @@
         const cid = [myId, selId].sort().join('_');
         db.ref('msgs/' + cid).push({ f: myId, x: inp.value, t: Date.now() });
         inp.value = '';
+    }
+
+    function saveProfile() {
+        db.ref('users/' + myId).update({
+            name: document.getElementById('set-name').value,
+            pilotId: document.getElementById('set-pilot-id').value,
+            birth: document.getElementById('set-birth').value
+        }).then(() => { alert("Данные обновлены!"); hideSettings(); });
+    }
+
+    function uploadAva(input) {
+        const r = new FileReader();
+        r.onload = e => db.ref('users/' + myId).update({ ava: e.target.result });
+        r.readAsDataURL(input.files[0]);
     }
 </script>
 </body>
