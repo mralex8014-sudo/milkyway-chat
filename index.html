@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay Messenger</title>
+    <title>MilkyWay Original Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -11,85 +11,59 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
-        body {
-            background-color: #0b0e14;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .app-container {
-            width: 350px;
-            height: 600px;
-            background: rgba(20, 25, 35, 0.95);
-            border: 1px solid #1f2a3d;
-            border-radius: 20px;
-            box-shadow: 0 0 30px rgba(0, 162, 255, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
+        /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН ИЗ ПРЕДЫДУЩИХ СООБЩЕНИЙ */
+        body { background-color: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .app-container { width: 350px; height: 600px; background: rgba(20, 25, 35, 0.95); border: 1px solid #1f2a3d; border-radius: 20px; box-shadow: 0 0 30px rgba(0, 162, 255, 0.2); display: flex; flex-direction: column; overflow: hidden; position: relative; }
         header { padding: 20px; text-align: center; border-bottom: 1px solid #1f2a3d; }
         h1 { margin: 0; font-size: 24px; color: #00a2ff; }
         .search-box { padding: 15px; display: flex; gap: 10px; flex-direction: column; }
         input { background: #161b22; border: 1px solid #30363d; padding: 10px; border-radius: 8px; color: white; outline: none; }
         button { background: #00a2ff; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
-        /* СОСТОЯНИЯ ЭКРАНОВ */
         .screen { display: none; flex-direction: column; height: 100%; }
         .active { display: flex; }
-        #recaptcha-container { margin: 10px 0; }
-        
+        .contact-item { display: flex; padding: 15px; border-bottom: 1px solid #161b22; cursor: pointer; transition: 0.3s; align-items: center; }
+        .contact-item:hover { background: #1c2128; }
+        .avatar { font-size: 30px; margin-right: 15px; }
         .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; margin-bottom: 5px; }
-        .my { align-self: flex-end; background: #00a2ff; }
+        .bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; }
+        .my { align-self: flex-end; background: #004d7a; }
         .th { align-self: flex-start; background: #1c2128; }
-        .tick { font-size: 10px; margin-left: 5px; }
-        .blue { color: #00f2ff; }
+        .tick { font-size: 10px; margin-left: 5px; color: #8b949e; }
+        .blue { color: #00a2ff; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    
     <div id="scr-auth" class="screen active">
         <header><h1>MilkyWay</h1></header>
         <div class="search-box">
-            <p style="text-align: center; font-size: 14px; color: #8b949e;">Введите Email для получения ссылки или телефон</p>
-            <input type="text" id="user-contact" placeholder="email@example.com или +7...">
+            <input type="text" id="contact-input" placeholder="email@example.com или +7...">
             <div id="recaptcha-container"></div>
-            <button id="send-btn" onclick="handleAuth()">ОТПРАВИТЬ КОД</button>
-            
-            <div id="otp-block" style="display:none; margin-top: 20px; flex-direction: column; gap: 10px;">
-                <input type="text" id="otp-code" placeholder="Код из SMS">
-                <button onclick="confirmPhoneCode()">ПОДТВЕРДИТЬ</button>
+            <button onclick="sendCode()">ПОЛУЧИТЬ КОД</button>
+            <div id="otp-area" style="display:none; margin-top:10px; flex-direction:column; gap:10px;">
+                <input type="text" id="otp-val" placeholder="Код из сообщения">
+                <button onclick="verify()">ВОЙТИ</button>
             </div>
         </div>
     </div>
 
     <div id="scr-main" class="screen">
-        <header><h1>Чаты</h1></header>
-        <div id="contacts-list" style="flex:1; overflow-y:auto;"></div>
-        <button onclick="auth.signOut()" style="margin: 10px; background: #ff4b4b;">ВЫЙТИ</button>
+        <header><h1>MilkyWay</h1></header>
+        <div class="contacts-list" id="contacts"></div>
+        <button onclick="firebase.auth().signOut()" style="margin:10px; background:#ff4b4b;">ВЫЙТИ</button>
     </div>
 
     <div id="scr-chat" class="screen">
-        <header style="display:flex; align-items:center; justify-content:space-between;">
-            <i class="fas fa-arrow-left" onclick="showMain()" style="cursor:pointer"></i>
-            <span id="chat-user">Чат</span>
-            <span></span>
+        <header style="display:flex; align-items:center;">
+            <i class="fas fa-arrow-left" onclick="showMain()" style="cursor:pointer; margin-right:15px; color:#00a2ff"></i>
+            <span id="chat-with" class="name">Чат</span>
         </header>
         <div class="msg-area" id="msg-area"></div>
-        <div class="search-box" style="flex-direction: row; border-top: 1px solid #1f2a3d;">
-            <input type="text" id="m-input" style="flex:1" placeholder="Сообщение...">
-            <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
+        <div class="search-box" style="flex-direction:row;">
+            <input type="text" id="m-text" style="flex:1" placeholder="Сообщение...">
+            <button onclick="send()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -107,150 +81,86 @@
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.database();
-    
-    let confirmationResult = null;
-    let activeChatId = null;
 
-    // Инициализация Recaptcha для телефона
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-        'size': 'invisible'
-    });
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
 
-    async function handleAuth() {
-        const contact = document.getElementById('user-contact').value;
-        
-        if (contact.includes('@')) {
-            // ЛОГИКА ПОЧТЫ (Отправка ссылки)
-            const actionCodeSettings = {
-                url: window.location.href,
-                handleCodeInApp: true
-            };
-            try {
-                await auth.sendSignInLinkToEmail(contact, actionCodeSettings);
-                window.localStorage.setItem('emailForSignIn', contact);
-                alert('Ссылка для входа отправлена на почту!');
-            } catch (e) { alert(e.message); }
+    async function sendCode() {
+        const val = document.getElementById('contact-input').value;
+        if(val.includes('@')) {
+            await auth.sendSignInLinkToEmail(val, { url: window.location.href, handleCodeInApp: true });
+            window.localStorage.setItem('emailForSignIn', val);
+            alert("Ссылка отправлена на почту!");
         } else {
-            // ЛОГИКА ТЕЛЕФОНА (SMS)
-            try {
-                const appVerifier = window.recaptchaVerifier;
-                confirmationResult = await auth.signInWithPhoneNumber(contact, appVerifier);
-                document.getElementById('otp-block').style.display = 'flex';
-                document.getElementById('send-btn').style.display = 'none';
-                alert('Код отправлен на телефон!');
-            } catch (e) { alert(e.message); }
+            window.confirmationResult = await auth.signInWithPhoneNumber(val, window.recaptchaVerifier);
+            document.getElementById('otp-area').style.display = 'flex';
         }
     }
 
-    async function confirmPhoneCode() {
-        const code = document.getElementById('otp-code').value;
-        try {
-            await confirmationResult.confirm(code);
-        } catch (e) { alert("Неверный код!"); }
+    async function verify() {
+        const code = document.getElementById('otp-val').value;
+        await window.confirmationResult.confirm(code);
     }
 
-    // Проверка входа по ссылке из почты
+    // Обработка входа по ссылке
     if (auth.isSignInWithEmailLink(window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn');
-        if (!email) email = window.prompt('Введите ваш email для подтверждения');
-        auth.signInWithEmailLink(email, window.location.href).then(() => {
-            window.localStorage.removeItem('emailForSignIn');
-        });
+        let email = window.localStorage.getItem('emailForSignIn') || window.prompt('Введите email');
+        auth.signInWithEmailLink(email, window.location.href).then(() => window.localStorage.removeItem('emailForSignIn'));
     }
 
     auth.onAuthStateChanged(user => {
-        if (user) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        if(user) {
             document.getElementById('scr-main').classList.add('active');
-            syncUser(user);
+            db.ref('users/' + user.uid).update({ name: user.email || user.phoneNumber });
             loadContacts();
         } else {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('scr-auth').classList.add('active');
         }
     });
 
-    function syncUser(user) {
-        db.ref('users/' + user.uid).update({
-            id: user.email || user.phoneNumber,
-            lastSeen: Date.now()
-        });
-    }
-
     function loadContacts() {
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('contacts-list');
-            list.innerHTML = '';
-            snap.forEach(child => {
-                if(child.key !== auth.currentUser.uid) {
-                    const u = child.val();
-                    list.innerHTML += `
-                        <div class="contact-item" style="display:flex; padding:15px; border-bottom:1px solid #161b22; cursor:pointer;" onclick="openChat('${child.key}', '${u.id}')">
-                            <div style="font-size:30px; margin-right:15px;">👤</div>
-                            <div>
-                                <div class="name">${u.id}</div>
-                                <div style="font-size:12px; color:#8b949e;">Нажми, чтобы написать</div>
-                            </div>
-                        </div>
-                    `;
+            const c = document.getElementById('contacts'); c.innerHTML = '';
+            snap.forEach(u => {
+                if(u.key !== auth.currentUser.uid) {
+                    c.innerHTML += `<div class="contact-item" onclick="openChat('${u.key}', '${u.val().name}')"><div class="avatar">👤</div><div><div class="name">${u.val().name}</div><div class="last-msg">Нажми, чтобы начать</div></div></div>`;
                 }
             });
         });
     }
 
+    let activeId = null;
     function openChat(id, name) {
-        activeChatId = id;
-        document.getElementById('chat-user').innerText = name;
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        activeId = id; document.getElementById('chat-with').innerText = name;
+        document.getElementById('scr-main').classList.remove('active');
         document.getElementById('scr-chat').classList.add('active');
-        loadMessages();
+        loadMsgs();
     }
 
     function showMain() {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-chat').classList.remove('active');
         document.getElementById('scr-main').classList.add('active');
     }
 
-    function sendMsg() {
-        const txt = document.getElementById('m-input');
-        if(!txt.value) return;
-        const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
-        
-        // E2EE (Простое шифрование)
-        const encrypted = CryptoJS.AES.encrypt(txt.value, 'secret_key').toString();
-
-        db.ref('msgs/' + chatId).push({
-            from: auth.currentUser.uid,
-            text: encrypted,
-            status: 'sent',
-            time: Date.now()
-        });
-        txt.value = '';
+    function send() {
+        const t = document.getElementById('m-text'); if(!t.value) return;
+        const cid = [auth.currentUser.uid, activeId].sort().join('_');
+        const enc = CryptoJS.AES.encrypt(t.value, 'secret').toString();
+        db.ref('msgs/' + cid).push({ from: auth.currentUser.uid, data: enc, time: Date.now(), read: false });
+        t.value = '';
     }
 
-    function loadMessages() {
-        const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
-        const area = document.getElementById('msg-area');
-        db.ref('msgs/' + chatId).on('value', snap => {
-            area.innerHTML = '';
-            snap.forEach(child => {
-                const m = child.val();
-                const isMe = m.from === auth.currentUser.uid;
-                const decrypted = CryptoJS.AES.decrypt(m.text, 'secret_key').toString(CryptoJS.enc.Utf8);
-                
-                // Статус "Прочитано" (WhatsApp Style)
-                if(!isMe && m.status !== 'read') {
-                    db.ref('msgs/' + chatId + '/' + child.key).update({status: 'read'});
-                }
-
-                area.innerHTML += `
-                    <div class="bubble ${isMe ? 'my' : 'th'}">
-                        ${decrypted}
-                        <i class="fas fa-check-double tick ${m.status === 'read' ? 'blue' : ''}"></i>
-                    </div>
-                `;
+    function loadMsgs() {
+        const cid = [auth.currentUser.uid, activeId].sort().join('_');
+        db.ref('msgs/' + cid).on('value', snap => {
+            const a = document.getElementById('msg-area'); a.innerHTML = '';
+            snap.forEach(m => {
+                const d = m.val(); const isMe = d.from === auth.currentUser.uid;
+                if(!isMe && !d.read) m.ref.update({read: true});
+                const dec = CryptoJS.AES.decrypt(d.data, 'secret').toString(CryptoJS.enc.Utf8);
+                a.innerHTML += `<div class="bubble ${isMe ? 'my' : 'th'}">${dec} <i class="fas fa-check-double tick ${d.read ? 'blue' : ''}"></i></div>`;
             });
-            area.scrollTop = area.scrollHeight;
+            a.scrollTop = a.scrollHeight;
         });
     }
 </script>
