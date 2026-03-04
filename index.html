@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Final 🌌</title>
+    <title>MilkyWay Classic 🌌</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -19,100 +19,101 @@
             --border: #30363d;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body { 
-            background: #010409; color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-            display: flex; justify-content: center; height: 100vh; overflow: hidden;
+            margin: 0; background: #000; color: var(--text); 
+            font-family: -apple-system, sans-serif; 
+            display: flex; justify-content: center; height: 100vh; 
         }
 
-        /* Контейнер-спасатель (Центрирует и держит форму) */
-        .app-container {
-            width: 100%; max-width: 420px; height: 100%; 
-            background: var(--bg); display: flex; flex-direction: column; 
+        .app { 
+            width: 100%; max-width: 450px; background: var(--bg); 
+            display: flex; flex-direction: column; position: relative;
             border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-            position: relative; box-shadow: 0 0 40px rgba(0,0,0,0.8);
         }
 
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
         .active { display: flex; }
-
-        /* Поля ввода (ФИКС: больше не на весь экран) */
-        .input-std {
-            width: 100%; height: 50px; background: #000; border: 1px solid var(--border);
-            border-radius: 10px; color: #fff; padding: 0 15px; outline: none; margin-bottom: 15px;
-        }
 
         header { 
             padding: 15px; background: var(--panel); 
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border); z-index: 10;
+            border-bottom: 1px solid var(--border);
         }
 
         /* Список чатов */
         #chat-list { flex: 1; overflow-y: auto; }
         .chat-item { 
             padding: 15px; border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; gap: 15px; cursor: pointer;
-            transition: background 0.2s;
+            display: flex; align-items: center; gap: 15px; cursor: pointer; 
         }
-        .chat-item:hover { background: #1c2128; }
-        .av { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .avatar { 
+            width: 45px; height: 45px; border-radius: 50%; background: var(--accent); 
+            display: flex; align-items: center; justify-content: center; font-weight: bold; 
+        }
 
         /* Сообщения */
-        #msg-flow { flex: 1; overflow-y: auto; padding: 20px 15px; display: flex; flex-direction: column; gap: 12px; background: #0d1117; }
-        .bubble { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 14px; position: relative; line-height: 1.5; }
+        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { 
+            max-width: 80%; padding: 10px 12px; border-radius: 12px; font-size: 14px; 
+            position: relative; line-height: 1.4; word-wrap: break-word;
+        }
         .my { align-self: flex-end; background: #056162; border-bottom-right-radius: 2px; }
         .their { align-self: flex-start; background: #202c33; border-bottom-left-radius: 2px; }
         
-        .time { font-size: 10px; opacity: 0.5; margin-top: 5px; display: block; text-align: right; }
+        /* Мета-данные внутри сообщений */
+        .m-meta { display: flex; align-items: center; justify-content: flex-end; gap: 4px; font-size: 10px; opacity: 0.6; margin-top: 4px; }
+        .msg img { max-width: 100%; border-radius: 8px; margin-top: 5px; cursor: pointer; }
 
-        /* Футер */
-        .footer { padding: 10px 15px; background: var(--panel); display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--border); }
-        .msg-input { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 10px 15px; border-radius: 20px; color: #fff; outline: none; }
+        /* Ввод */
+        .input-area { padding: 10px; background: var(--panel); display: flex; align-items: center; gap: 10px; }
+        input { 
+            flex: 1; background: var(--bg); border: 1px solid var(--border); 
+            padding: 10px 15px; border-radius: 20px; color: #fff; outline: none; 
+        }
 
-        .btn-send { color: var(--accent); font-size: 20px; cursor: pointer; }
-        .btn-plus { position: absolute; bottom: 80px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+        .fab {
+            position: absolute; bottom: 80px; right: 20px; width: 50px; height: 50px;
+            border-radius: 50%; background: var(--accent); display: flex;
+            align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="scr-auth" class="screen active" style="padding: 40px; justify-content: center;">
-        <h1 style="text-align: center; color: var(--accent); margin-bottom: 40px; font-size: 32px;">MilkyWay</h1>
-        <input type="email" id="email" class="input-std" placeholder="Email">
-        <input type="password" id="pass" class="input-std" placeholder="Пароль">
-        <button onclick="authOp('login')" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-weight:bold; cursor:pointer;">ВОЙТИ</button>
-        <p onclick="authOp('reg')" style="text-align:center; margin-top:25px; font-size:13px; opacity:0.5; cursor:pointer;">Регистрация пилота</p>
+<div class="app">
+    <div id="scr-login" class="screen active" style="padding:40px; justify-content:center;">
+        <h1 style="text-align:center; color:var(--accent);">MilkyWay</h1>
+        <input type="email" id="email" placeholder="Email" style="margin-top:20px; width:100%;">
+        <input type="password" id="pass" placeholder="Пароль" style="margin-top:10px; width:100%;">
+        <button onclick="authOp('login')" style="margin-top:20px; width:100%; padding:15px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-weight:bold;">ВОЙТИ</button>
+        <p onclick="authOp('reg')" style="text-align:center; font-size:12px; margin-top:15px; opacity:0.5; cursor:pointer;">Регистрация</p>
     </div>
 
-    <div id="scr-list" class="screen">
+    <div id="scr-main" class="screen">
         <header>
-            <b style="font-size: 20px;">Чаты</b>
-            <i class="fas fa-power-off" style="opacity:0.6;" onclick="auth.signOut()"></i>
+            <b>Чаты</b>
+            <i class="fas fa-sign-out-alt" onclick="auth.signOut()"></i>
         </header>
         <div id="chat-list"></div>
-        <div class="btn-plus" onclick="addNew()"><i class="fas fa-user-plus"></i></div>
+        <div class="fab" onclick="addUser()"><i class="fas fa-plus"></i></div>
     </div>
 
     <div id="scr-chat" class="screen">
         <header>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-chevron-left" onclick="show('scr-list')"></i>
-                <div class="av" id="h-av" style="width:36px; height:36px; font-size:14px;">?</div>
-                <b id="h-name">Чат</b>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fas fa-arrow-left" onclick="show('scr-main')"></i>
+                <div id="chat-title" style="font-weight:bold;">Чат</div>
             </div>
-            <div style="display:flex; gap:18px; opacity:0.8;">
-                <i class="fas fa-phone"></i>
-                <i class="fas fa-video"></i>
+            <div style="display:flex; gap:15px; font-size:18px; opacity:0.8;">
+                <i class="fas fa-phone" onclick="alert('Звонок...')"></i>
+                <i class="fas fa-video" onclick="alert('Видеозвонок...')"></i>
             </div>
         </header>
-        <div id="msg-flow"></div>
-        <div class="footer">
-            <label style="cursor:pointer;"><i class="fas fa-paperclip" style="opacity:0.6;"></i><input type="file" id="f-up" hidden onchange="upFile()"></label>
-            <input type="text" id="m-in" class="msg-input" placeholder="Сообщение...">
-            <i class="fas fa-paper-plane btn-send" onclick="sendMsg()"></i>
+        <div id="messages"></div>
+        <div class="input-area">
+            <label style="cursor:pointer;"><i class="fas fa-paperclip"></i><input type="file" id="file-in" hidden onchange="sendFile()"></label>
+            <input type="text" id="m-input" placeholder="Сообщение...">
+            <button onclick="send()" style="background:none; border:none; color:var(--accent); font-size:20px;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -129,39 +130,40 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database(), st = firebase.storage();
-    let me = null, activeChat = null;
+    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+    let user = null, chatId = null;
 
     function show(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    function authOp(mode) {
+    function authOp(type) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(mode === 'login') auth.signInWithEmailAndPassword(e,p).catch(err => alert(err.message));
+        if(type === 'login') auth.signInWithEmailAndPassword(e,p).catch(a => alert(a.message));
         else auth.createUserWithEmailAndPassword(e,p).then(u => {
             db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
-            db.ref('map/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
-        }).catch(err => alert(err.message));
+            db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
+        });
     }
 
-    auth.onAuthStateChanged(user => {
-        if(user) { me = user; show('scr-list'); loadChats(); }
-        else show('scr-auth');
+    auth.onAuthStateChanged(u => {
+        if(u) { user = u; show('scr-main'); loadChats(); }
+        else show('scr-login');
     });
 
     function loadChats() {
         const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-item" onclick="openChat('global','Общий чат')"><div class="av" style="background:#f39c12">G</div><b>Общий чат</b></div>`;
-        db.ref('users/'+me.uid+'/contacts').on('value', s => {
+        list.innerHTML = `<div class="chat-item" onclick="openChat('global','Общий чат')"><div class="avatar">G</div><b>Общий чат</b></div>`;
+        db.ref('users/'+user.uid+'/contacts').on('value', s => {
             s.forEach(c => {
-                db.ref('users/'+c.key).once('value', us => {
-                    const d = us.val();
+                db.ref('users/'+c.key).once('value', uS => {
+                    const ud = uS.val();
+                    if(!ud) return;
                     const div = document.createElement('div');
                     div.className = 'chat-item';
-                    div.onclick = () => openChat(c.key, d.name);
-                    div.innerHTML = `<div class="av">${d.name[0].toUpperCase()}</div><b>${d.name}</b>`;
+                    div.onclick = () => openChat(c.key, ud.name);
+                    div.innerHTML = `<div class="avatar">${ud.name[0].toUpperCase()}</div><b>${ud.name}</b>`;
                     list.appendChild(div);
                 });
             });
@@ -169,47 +171,51 @@
     }
 
     function openChat(id, name) {
-        activeChat = id === 'global' ? 'global' : [me.uid, id].sort().join("_");
-        document.getElementById('h-name').innerText = name;
-        document.getElementById('h-av').innerText = name[0].toUpperCase();
+        chatId = id === 'global' ? 'global' : [user.uid, id].sort().join("_");
+        document.getElementById('chat-title').innerText = name;
         show('scr-chat');
-        db.ref('msgs/'+activeChat).off();
-        const flow = document.getElementById('msg-flow');
-        flow.innerHTML = '';
-        db.ref('msgs/'+activeChat).on('child_added', s => {
-            const m = s.val();
+        db.ref('msgs/'+chatId).off();
+        const area = document.getElementById('messages');
+        area.innerHTML = '';
+        db.ref('msgs/'+chatId).on('child_added', s => {
+            const d = s.val();
             const div = document.createElement('div');
-            div.className = `bubble ${m.from === me.uid ? 'my' : 'their'}`;
-            let t = new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-            let content = m.type === 'img' ? `<img src="${m.url}" style="width:100%; border-radius:8px;">` : m.txt;
-            div.innerHTML = `${content} <span class="time">${t} ${m.from === me.uid ? '✓✓' : ''}</span>`;
-            flow.appendChild(div);
-            flow.scrollTop = flow.scrollHeight;
+            div.className = `msg ${d.from === user.uid ? 'my' : 'their'}`;
+            
+            let timeStr = new Date(d.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            let content = d.type === 'file' ? `<img src="${d.url}" onclick="window.open('${d.url}')">` : d.txt;
+            
+            div.innerHTML = `${content} <div class="m-meta">${timeStr} ${d.from === user.uid ? '✓✓' : ''}</div>`;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
         });
     }
 
-    function sendMsg() {
-        const i = document.getElementById('m-in');
+    function send() {
+        const i = document.getElementById('m-input');
         if(!i.value.trim()) return;
-        db.ref('msgs/'+activeChat).push({from: me.uid, txt: i.value, time: Date.now(), type: 'text'});
+        db.ref('msgs/'+chatId).push({from: user.uid, txt: i.value, time: Date.now(), type: 'text'});
         i.value = '';
     }
 
-    function upFile() {
-        const f = document.getElementById('f-up').files[0];
-        if(!f) return;
-        st.ref('files/'+Date.now()).put(f).then(s => s.ref.getDownloadURL()).then(url => {
-            db.ref('msgs/'+activeChat).push({from: me.uid, url: url, time: Date.now(), type: 'img'});
+    function sendFile() {
+        const file = document.getElementById('file-in').files[0];
+        if(!file) return;
+        const ref = storage.ref(`files/${chatId}/${Date.now()}_${file.name}`);
+        ref.put(file).then(s => s.ref.getDownloadURL()).then(url => {
+            db.ref('msgs/'+chatId).push({from: user.uid, url: url, time: Date.now(), type: 'file'});
+        }).catch(err => alert("Ошибка загрузки. Проверь Storage в Firebase!"));
+    }
+
+    function addUser() {
+        const e = prompt("Email:");
+        if(e) db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).once('value', s => {
+            if(s.exists()) db.ref('users/'+user.uid+'/contacts/'+s.val()).set(true);
+            else alert("Пользователь не найден");
         });
     }
 
-    function addNew() {
-        const e = prompt("Email пилота:");
-        if(e) db.ref('map/'+btoa(e).replace(/=/g,"")).once('value', s => {
-            if(s.exists()) db.ref('users/'+me.uid+'/contacts/'+s.val()).set(true);
-        });
-    }
-    document.getElementById('m-in').onkeypress = e => { if(e.key==='Enter') sendMsg(); };
+    document.getElementById('m-input').onkeypress = e => { if(e.key==='Enter') send(); };
 </script>
 </body>
 </html>
