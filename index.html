@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay Elite Messenger</title>
+    <title>MilkyWay Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -20,18 +20,17 @@
             margin: 0; 
         }
 
-        /* Тот самый контейнер из твоих первых скринов */
         .app-container { 
             width: 360px; 
             height: 640px; 
             background: #141923; 
             border: 1px solid #1f2a3d; 
             border-radius: 25px; 
-            position: relative; 
             display: flex; 
             flex-direction: column; 
-            box-shadow: 0 0 50px rgba(0, 162, 255, 0.1);
+            box-shadow: 0 0 50px rgba(0, 162, 255, 0.15);
             overflow: hidden;
+            position: relative;
         }
 
         .screen { 
@@ -40,8 +39,7 @@
             height: 100%; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: center; 
-            padding: 30px; 
+            padding: 40px 25px; 
         }
         .active { display: flex; }
 
@@ -49,10 +47,12 @@
             font-size: 32px; 
             font-weight: bold; 
             color: #00a2ff; 
-            margin-bottom: 40px; 
-            text-shadow: 0 0 15px rgba(0, 162, 255, 0.6); 
+            margin-bottom: 50px; 
+            text-shadow: 0 0 15px rgba(0, 162, 255, 0.5); 
         }
 
+        .input-group { width: 100%; margin-bottom: 15px; }
+        
         input { 
             width: 100%; 
             background: #1c222d; 
@@ -60,10 +60,11 @@
             padding: 15px; 
             border-radius: 12px; 
             color: white; 
-            margin-bottom: 15px; 
             outline: none; 
             text-align: center;
+            transition: 0.3s;
         }
+        input:focus { border-color: #00a2ff; box-shadow: 0 0 10px rgba(0, 162, 255, 0.2); }
 
         button { 
             width: 100%; 
@@ -74,15 +75,22 @@
             border-radius: 12px; 
             cursor: pointer; 
             font-weight: bold; 
-            transition: 0.3s;
+            margin-top: 10px;
         }
-        button:hover { background: #0081cc; box-shadow: 0 0 20px rgba(0, 162, 255, 0.4); }
+        button:hover { background: #0081cc; }
 
-        #recaptcha-container { margin: 10px 0; transform: scale(0.85); }
-        
-        .user-list { width: 100%; flex: 1; overflow-y: auto; }
-        .user-item { padding: 20px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .user-item:hover { background: #1c222d; }
+        .switch-btn { 
+            margin-top: 20px; 
+            color: #888; 
+            font-size: 13px; 
+            cursor: pointer; 
+            text-decoration: underline; 
+        }
+
+        /* Список чатов */
+        header { width: 100%; padding: 20px; border-bottom: 1px solid #1f2a3d; text-align: center; }
+        .user-list { flex: 1; width: 100%; overflow-y: auto; }
+        .user-item { padding: 20px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; gap: 15px; }
     </style>
 </head>
 <body>
@@ -90,22 +98,22 @@
 <div class="app-container">
     <div id="scr-auth" class="screen active">
         <div class="logo">MilkyWay</div>
-        <input type="text" id="login-field" placeholder="Email или +7900...">
-        <div id="recaptcha-container"></div>
-        <button id="main-btn" onclick="sendRequest()">ПОЛУЧИТЬ КОД</button>
-
-        <div id="otp-group" style="display:none; width: 100%; margin-top: 15px;">
-            <input type="text" id="otp-field" placeholder="Код подтверждения">
-            <button onclick="verify()">ВОЙТИ</button>
+        
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email (mr.alex8014@gmail.com)">
         </div>
+        <div class="input-group">
+            <input type="password" id="pass" placeholder="Пароль">
+        </div>
+        
+        <button id="auth-btn" onclick="handleAuth()">ВОЙТИ</button>
+        <div class="switch-btn" id="toggle-txt" onclick="toggleMode()">Нет аккаунта? Регистрация</div>
     </div>
 
-    <div id="scr-main" class="screen" style="padding: 0; justify-content: flex-start;">
-        <div style="padding: 20px; border-bottom: 1px solid #1f2a3d; width: 100%; text-align: center;">
-            <h2 style="margin: 0; color: #00a2ff;">Мессенджер</h2>
-        </div>
+    <div id="scr-main" class="screen" style="padding: 0;">
+        <header><h2 style="margin:0; color:#00a2ff; font-size: 20px;">Чаты</h2></header>
         <div class="user-list" id="users"></div>
-        <button onclick="auth.signOut()" style="background: #ff4b4b; border-radius: 0;">ВЫЙТИ</button>
+        <button onclick="auth.signOut()" style="background:#ff4b4b; border-radius:0; margin:0;">ВЫЙТИ</button>
     </div>
 </div>
 
@@ -123,64 +131,45 @@
     const auth = firebase.auth();
     const db = firebase.database();
 
-    // Капча для телефона
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'normal' });
+    let isLogin = true;
 
-    async function sendRequest() {
-        const val = document.getElementById('login-field').value;
-        if(!val) return alert("Введите данные");
+    function toggleMode() {
+        isLogin = !isLogin;
+        document.getElementById('auth-btn').innerText = isLogin ? "ВОЙТИ" : "СОЗДАТЬ АККАУНТ";
+        document.getElementById('toggle-txt').innerText = isLogin ? "Нет аккаунта? Регистрация" : "Уже есть аккаунт? Войти";
+    }
+
+    async function handleAuth() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('pass').value;
+
+        if(!email || !pass) return alert("Заполни все поля");
 
         try {
-            if(val.includes('@')) {
-                // Вход по почте
-                await auth.sendSignInLinkToEmail(val, {
-                    url: window.location.href,
-                    handleCodeInApp: true
-                });
-                window.localStorage.setItem('emailForSignIn', val);
-                alert("Ссылка для входа на почте!");
+            if(isLogin) {
+                await auth.signInWithEmailAndPassword(email, pass);
             } else {
-                // Вход по телефону
-                window.confirmationResult = await auth.signInWithPhoneNumber(val, window.recaptchaVerifier);
-                document.getElementById('otp-group').style.display = 'block';
-                document.getElementById('main-btn').style.display = 'none';
+                const res = await auth.createUserWithEmailAndPassword(email, pass);
+                await db.ref('users/' + res.user.uid).set({ email: email, status: "online" });
             }
         } catch (e) {
-            alert("Ошибка Firebase: " + e.message + "\n\nПРОВЕРЬТЕ НАСТРОЙКИ В КОНСОЛИ!");
+            alert("Ошибка: " + e.message);
         }
     }
 
-    async function verify() {
-        const code = document.getElementById('otp-field').value;
-        try {
-            await window.confirmationResult.confirm(code);
-        } catch (e) { alert("Ошибка кода!"); }
-    }
-
-    // Слушатель ссылки из письма
-    if (auth.isSignInWithEmailLink(window.location.href)) {
-        let email = window.localStorage.getItem('emailForSignIn') || window.prompt('Подтвердите Email');
-        auth.signInWithEmailLink(email, window.location.href).then(() => {
-            window.localStorage.removeItem('emailForSignIn');
-        });
-    }
-
-    // Переключение экранов
     auth.onAuthStateChanged(user => {
         document.getElementById('scr-auth').classList.toggle('active', !user);
         document.getElementById('scr-main').classList.toggle('active', !!user);
-        if(user) {
-            db.ref('users/' + user.uid).set({ name: user.email || user.phoneNumber });
-            loadUsers();
-        }
+        if(user) loadUsers();
     });
 
     function loadUsers() {
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('users'); list.innerHTML = '';
+            const list = document.getElementById('users');
+            list.innerHTML = '';
             snap.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
-                    list.innerHTML += `<div class="user-item">👤 ${u.val().name}</div>`;
+                    list.innerHTML += `<div class="user-item">👤 ${u.val().email}</div>`;
                 }
             });
         });
