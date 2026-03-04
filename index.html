@@ -3,42 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Stable</title>
+    <title>MilkyWay Elite Final</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* БАЗОВЫЙ КАРКАС (НЕ ТРОГАТЬ) */
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0b0e14; color: #e9edef; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        
-        /* ГЛАВНЫЙ КОНТЕЙНЕР - ОН НЕ СЛОМАЕТСЯ */
-        .app { width: 360px; height: 640px; background: #111b21; position: relative; display: flex; flex-direction: column; border: 1px solid #2a3942; border-radius: 15px; overflow: hidden; }
+        body { background: #0b0e14; color: #e9edef; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .app { width: 360px; height: 640px; background: #111b21; border: 1px solid #2a3942; border-radius: 20px; overflow: hidden; position: relative; }
 
+        /* ЭКРАНЫ */
         .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: #111b21; }
         .active { display: flex; z-index: 10; }
-
-        /* ВХОД */
-        .auth-box { padding: 40px 20px; text-align: center; }
-        input { width: 100%; background: #2a3942; border: 1px solid #3b4a54; padding: 12px; border-radius: 8px; color: white; margin-bottom: 10px; outline: none; }
-        .btn { background: #00a2ff; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-
-        /* СПИСОК */
-        .header { background: #202c33; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a3942; }
-        .user-list { flex: 1; overflow-y: auto; }
-        .user-item { padding: 15px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; gap: 10px; }
-        .user-item:hover { background: #202c33; }
-        .avatar { width: 40px; height: 40px; background: #394145; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-        /* ЧАТ - ВЫЕЗЖАЕТ ПОВЕРХ */
         #chat-screen { transform: translateX(100%); transition: 0.3s; z-index: 20; }
         #chat-screen.open { transform: translateX(0); }
-        .messages { flex: 1; overflow-y: auto; padding: 15px; background: #0b141a; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 14px; color: white; }
-        .bubble.me { background: #005c4b; align-self: flex-end; }
-        .bubble.he { background: #202c33; align-self: flex-start; }
+
+        /* ДИЗАЙН WHATSAPP */
+        .header { background: #202c33; padding: 10px 15px; display: flex; align-items: center; gap: 15px; height: 60px; border-bottom: 1px solid #2a3942; }
+        .avatar { width: 40px; height: 40px; background: #394145; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; }
+        .online-dot { width: 12px; height: 12px; background: #00af9c; border: 2px solid #111b21; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+
+        .user-item { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222d34; cursor: pointer; }
+        .user-item:hover { background: #2a3942; }
+
+        .messages { flex: 1; overflow-y: auto; padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-color: #0b141a; display: flex; flex-direction: column; gap: 5px; }
+        .bubble { padding: 6px 10px; border-radius: 8px; max-width: 85%; font-size: 14px; position: relative; }
+        .bubble.me { background: #005c4b; align-self: flex-end; border-top-right-radius: 2px; }
+        .bubble.he { background: #202c33; align-self: flex-start; border-top-left-radius: 2px; }
+        .b-time { font-size: 10px; color: rgba(255,255,255,0.5); float: right; margin: 4px -4px 0 8px; }
+
+        .footer { background: #202c33; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        input { background: #2a3942; border: none; padding: 12px; border-radius: 20px; color: white; outline: none; flex: 1; }
         
-        .footer { background: #202c33; padding: 10px; display: flex; gap: 10px; }
+        /* AUTH */
+        .auth-box { padding: 50px 20px; text-align: center; }
+        .auth-btn { background: #00a2ff; border: none; padding: 15px; border-radius: 10px; color: white; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -46,32 +47,35 @@
 <div class="app">
     <div id="scr-auth" class="screen active">
         <div class="auth-box">
-            <h1 style="color:#00a2ff; margin-bottom:30px;">MilkyWay</h1>
+            <h1 style="color:#00a2ff; margin-bottom:40px;">MilkyWay</h1>
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="pass" placeholder="Пароль">
-            <button class="btn" onclick="authAction(true)">ВОЙТИ</button>
-            <p onclick="authAction(false)" style="color:#8696a0; font-size:12px; margin-top:15px; cursor:pointer;">Создать аккаунт</p>
+            <button class="auth-btn" onclick="authAction(true)">ВОЙТИ</button>
+            <p onclick="authAction(false)" style="color:#8696a0; margin-top:20px; cursor:pointer;">Регистрация</p>
         </div>
     </div>
 
     <div id="scr-main" class="screen">
         <div class="header">
-            <strong>Чаты</strong>
+            <h2>WhatsApp Elite</h2>
             <i class="fas fa-sign-out-alt" onclick="auth.signOut()"></i>
         </div>
-        <div id="user-list" class="user-list"></div>
+        <div id="contact-list" style="flex:1; overflow-y:auto;"></div>
     </div>
 
     <div id="chat-screen" class="screen">
         <div class="header">
-            <span onclick="closeChat()">⬅ Назад</span>
-            <b id="chat-title">Чат</b>
-            <span></span>
+            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+            <div class="avatar" style="width:35px; height:35px;">👤</div>
+            <div style="flex:1">
+                <div id="chat-name" style="font-weight:bold;">Чат</div>
+                <div id="chat-status" style="font-size:11px; color:#00a2ff;"></div>
+            </div>
         </div>
-        <div id="messages" class="messages"></div>
+        <div id="msg-box" class="messages"></div>
         <div class="footer">
-            <input type="text" id="m-input" placeholder="Сообщение..." style="margin:0;">
-            <button class="btn" onclick="send()" style="width:50px;">➤</button>
+            <input type="text" id="m-input" placeholder="Сообщение" oninput="isTyping()">
+            <i class="fas fa-paper-plane" style="color:#00a2ff; font-size:20px;" onclick="send()"></i>
         </div>
     </div>
 </div>
@@ -88,36 +92,42 @@
     };
     firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    let selId = null;
+    let selId = null, tTimer;
 
-    async function authAction(isLogin) {
+    async function authAction(isLog) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
         try {
-            if(isLogin) await auth.signInWithEmailAndPassword(e, p);
+            if(isLog) await auth.signInWithEmailAndPassword(e, p);
             else {
                 const r = await auth.createUserWithEmailAndPassword(e, p);
-                await db.ref('users/' + r.user.uid).set({ name: e.split('@')[0] });
+                await db.ref('users/' + r.user.uid).set({ name: e.split('@')[0], email: e, status: 'online' });
             }
         } catch(err) { alert(err.message); }
     }
 
     auth.onAuthStateChanged(u => {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-auth').classList.toggle('active', !u);
+        document.getElementById('scr-main').classList.toggle('active', !!u);
         if(u) {
-            document.getElementById('scr-main').classList.add('active');
-            loadUsers();
-        } else {
-            document.getElementById('scr-auth').classList.add('active');
+            db.ref('users/' + u.uid + '/status').set('online');
+            db.ref('users/' + u.uid + '/status').onDisconnect().set('offline');
+            loadContacts();
         }
     });
 
-    function loadUsers() {
+    function loadContacts() {
         db.ref('users').on('value', s => {
-            const list = document.getElementById('user-list'); list.innerHTML = '';
+            const list = document.getElementById('contact-list'); list.innerHTML = '';
             s.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
-                    list.innerHTML += `<div class="user-item" onclick="openChat('${u.key}','${u.val().name || 'User'}')">
-                        <div class="avatar">👤</div> <b>${u.val().name || 'User'}</b>
+                    const d = u.val();
+                    list.innerHTML += `
+                    <div class="user-item" onclick="openChat('${u.key}','${d.name || d.email}')">
+                        <div class="avatar">👤 ${d.status==='online'?'<div class="online-dot"></div>':''}</div>
+                        <div>
+                            <b>${d.name || d.email}</b>
+                            <div style="font-size:12px; color:#8696a0">${d.status==='online'?'в сети':'был недавно'}</div>
+                        </div>
                     </div>`;
                 }
             });
@@ -125,26 +135,39 @@
     }
 
     function openChat(id, name) {
-        selId = id; document.getElementById('chat-title').innerText = name;
-        document.getElementById('chat-screen').classList.add('active', 'open');
+        selId = id; document.getElementById('chat-name').innerText = name;
+        document.getElementById('chat-screen').classList.add('open', 'active');
         const cId = [auth.currentUser.uid, id].sort().join('_');
+        
         db.ref('msgs/' + cId).on('value', s => {
-            const mBox = document.getElementById('messages'); mBox.innerHTML = '';
+            const box = document.getElementById('msg-box'); box.innerHTML = '';
             s.forEach(m => {
-                const isMe = m.val().f === auth.currentUser.uid;
-                mBox.innerHTML += `<div class="bubble ${isMe?'me':'he'}">${m.val().t}</div>`;
+                const msg = m.val(), isMe = msg.f === auth.currentUser.uid;
+                const time = new Date(msg.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                box.innerHTML += `<div class="bubble ${isMe?'me':'he'}">${msg.x}<span class="b-time">${time} ${isMe?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</span></div>`;
             });
-            mBox.scrollTop = mBox.scrollHeight;
+            box.scrollTop = box.scrollHeight;
+        });
+
+        db.ref('typing/' + id + '/' + auth.currentUser.uid).on('value', s => {
+            document.getElementById('chat-status').innerText = s.val() ? 'печатает...' : '';
         });
     }
 
-    function closeChat() { document.getElementById('chat-screen').classList.remove('open', 'active'); }
+    function closeChat() { document.getElementById('chat-screen').classList.remove('open'); }
 
     function send() {
-        const t = document.getElementById('m-input').value; if(!t) return;
+        const val = document.getElementById('m-input').value; if(!val) return;
         const cId = [auth.currentUser.uid, selId].sort().join('_');
-        db.ref('msgs/' + cId).push({ f: auth.currentUser.uid, t: t });
+        db.ref('msgs/' + cId).push({ f: auth.currentUser.uid, x: val, t: Date.now() });
         document.getElementById('m-input').value = '';
+        db.ref('typing/' + auth.currentUser.uid + '/' + selId).set(false);
+    }
+
+    function isTyping() {
+        db.ref('typing/' + auth.currentUser.uid + '/' + selId).set(true);
+        clearTimeout(tTimer);
+        tTimer = setTimeout(() => db.ref('typing/' + auth.currentUser.uid + '/' + selId).set(false), 2000);
     }
 </script>
 </body>
