@@ -3,95 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Ultra 🌌</title>
+    <title>MilkyWay Ultra Secure 🌌</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --accent: #00a2ff; --bg: #0b0e14; --panel: #161b22; --border: #30363d; }
+        :root { --accent: #00a2ff; --bg: #0b0e14; --panel: #161b22; --border: #30363d; --text: #e6edf3; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
         
-        .app-container { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; position: relative; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
-        
-        /* Меню */
-        #sidebar { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; visibility: hidden; opacity: 0; transition: 0.3s; }
+        body { 
+            background: #010409; 
+            color: var(--text); 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            overflow: hidden;
+        }
+
+        /* Главный контейнер - центрируем на ПК */
+        .app-container { 
+            width: 100%; 
+            max-width: 500px; 
+            height: 100vh; 
+            background: var(--bg); 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            border-left: 1px solid var(--border); 
+            border-right: 1px solid var(--border);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        @media (min-height: 800px) and (min-width: 600px) {
+            .app-container { height: 90vh; border-radius: 12px; }
+        }
+
+        /* Шторка меню внутри контейнера */
+        #sidebar { 
+            position: absolute; 
+            inset: 0; 
+            background: rgba(0,0,0,0.7); 
+            z-index: 1000; 
+            visibility: hidden; 
+            opacity: 0; 
+            transition: 0.3s; 
+        }
         #sidebar.open { visibility: visible; opacity: 1; }
-        .sidebar-drawer { width: 300px; height: 100%; background: var(--panel); transform: translateX(-100%); transition: 0.3s; padding: 40px 20px; }
+        .sidebar-drawer { 
+            width: 80%; 
+            height: 100%; 
+            background: var(--panel); 
+            transform: translateX(-100%); 
+            transition: 0.3s; 
+            padding: 30px 20px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 20px;
+        }
         #sidebar.open .sidebar-drawer { transform: translateX(0); }
 
-        /* Экраны */
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; }
         .active-screen { display: flex; }
-        header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: var(--panel); }
-        
+
+        header { 
+            padding: 15px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            border-bottom: 1px solid var(--border); 
+            background: var(--panel);
+            min-height: 60px;
+        }
+
         /* Список чатов */
-        .chat-list { flex: 1; overflow-y: auto; }
-        .chat-card { padding: 15px 20px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .chat-list { flex: 1; overflow-y: auto; background: var(--bg); }
+        .chat-card { 
+            padding: 15px; 
+            display: flex; 
+            align-items: center; 
+            cursor: pointer; 
+            border-bottom: 1px solid var(--border); 
+            transition: 0.2s; 
+        }
         .chat-card:hover { background: #1c2128; }
-        .avatar { width: 48px; height: 48px; background: var(--accent); border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .avatar { 
+            width: 45px; 
+            height: 45px; 
+            background: var(--accent); 
+            border-radius: 50%; 
+            margin-right: 15px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold;
+            flex-shrink: 0;
+        }
 
         /* Сообщения */
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #0d1117; }
-        .msg { max-width: 80%; padding: 10px 14px 22px 14px; border-radius: 18px; font-size: 15px; position: relative; min-width: 80px; word-wrap: break-word; }
-        .my { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-        .their { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .msg-time { position: absolute; bottom: 5px; right: 12px; font-size: 10px; opacity: 0.7; }
-        
-        /* Звонки */
-        #video-call-overlay { position: fixed; inset: 0; background: black; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        video { width: 90%; max-height: 40%; border-radius: 10px; background: #222; margin: 10px; }
-        .btn-call-end { background: #da3633; padding: 15px; border-radius: 50%; border: none; color: white; cursor: pointer; margin-top: 20px; width: 60px; height: 60px; }
+        #messages { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            background: #0d1117; 
+        }
+        .msg { 
+            max-width: 85%; 
+            padding: 10px 12px 20px 12px; 
+            border-radius: 15px; 
+            font-size: 14px; 
+            position: relative; 
+            word-wrap: break-word; 
+        }
+        .my { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
+        .their { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
+        .msg-time { position: absolute; bottom: 4px; right: 10px; font-size: 9px; opacity: 0.6; }
 
-        /* Инструменты */
-        .footer { padding: 15px; display: flex; align-items: center; gap: 10px; background: var(--panel); border-top: 1px solid var(--border); }
-        .input-box { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px 18px; border-radius: 25px; color: white; outline: none; }
-        .icon-btn { font-size: 20px; color: var(--accent); cursor: pointer; padding: 5px; }
-        .fab { position: absolute; bottom: 85px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; }
+        /* Ввод */
+        .footer { 
+            padding: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            background: var(--panel); 
+            border-top: 1px solid var(--border); 
+        }
+        .input-box { 
+            flex: 1; 
+            background: var(--bg); 
+            border: 1px solid var(--border); 
+            padding: 10px 15px; 
+            border-radius: 20px; 
+            color: white; 
+            outline: none; 
+            font-size: 14px;
+        }
+
+        .fab { 
+            position: absolute; 
+            bottom: 80px; 
+            right: 20px; 
+            width: 56px; 
+            height: 56px; 
+            border-radius: 50%; 
+            background: var(--accent); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 22px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 12px rgba(0,162,255,0.3); 
+            z-index: 99; 
+        }
+
+        .icon-btn { font-size: 18px; color: var(--accent); cursor: pointer; transition: 0.2s; }
+        .icon-btn:hover { opacity: 0.7; }
+
+        #video-call-overlay { 
+            position: absolute; 
+            inset: 0; 
+            background: black; 
+            z-index: 2000; 
+            display: none; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        video { width: 90%; border-radius: 12px; background: #222; }
     </style>
 </head>
 <body>
 
-<div id="video-call-overlay">
-    <video id="remoteVideo" autoplay playsinline></video>
-    <video id="localVideo" autoplay playsinline muted style="width: 30%; position: absolute; bottom: 100px; right: 20px; border: 2px solid var(--accent);"></video>
-    <button class="btn-call-end" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
-</div>
-
 <div class="app-container">
     <div id="sidebar" onclick="toggleMenu()">
         <div class="sidebar-drawer" onclick="event.stopPropagation()">
-            <h2>Настройки</h2>
-            <div id="my-uid" onclick="copyUID()" style="background: var(--bg); padding: 12px; border-radius: 8px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); word-break: break-all; margin: 20px 0;">...</div>
-            <button onclick="auth.signOut()" style="width: 100%; padding: 12px; background: #da3633; color: white; border: none; border-radius: 8px;">Выйти</button>
+            <h3 style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">Настройки</h3>
+            <div>
+                <p style="font-size: 11px; color: #8b949e; margin-bottom: 5px;">Ваш UID:</p>
+                <div id="my-uid" onclick="copyUID()" style="background: #0d1117; padding: 10px; border-radius: 6px; font-size: 10px; cursor: pointer; border: 1px solid var(--border); word-break: break-all;">Загрузка...</div>
+            </div>
+            <button onclick="auth.signOut()" style="margin-top: auto; width: 100%; padding: 12px; background: #da3633; color: white; border: none; border-radius: 8px; cursor: pointer;">Выйти из кабины</button>
         </div>
     </div>
 
-    <div id="screen-auth" class="screen active-screen" style="justify-content: center; padding: 40px; text-align: center;">
-        <h1 style="color: var(--accent); font-size: 42px;">MilkyWay</h1>
-        <input type="email" id="email" class="input-box" style="margin-top:20px; width:100%;" placeholder="Email">
-        <input type="password" id="pass" class="input-box" style="margin-top:10px; width:100%;" placeholder="Пароль">
-        <button onclick="authOp('login')" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; color:white; margin-top:20px; font-weight:bold;">Войти</button>
-        <p onclick="authOp('reg')" style="margin-top:20px; color:#8b949e; cursor:pointer;">Создать аккаунт</p>
+    <div id="screen-auth" class="screen active-screen" style="justify-content: center; padding: 30px; text-align: center;">
+        <h1 style="color: var(--accent); font-size: 38px; margin-bottom: 10px;">MilkyWay</h1>
+        <p style="color: #8b949e; font-size: 14px; margin-bottom: 30px;">Космический зашифрованный чат</p>
+        <input type="email" id="email" class="input-box" style="margin-bottom:10px; width:100%;" placeholder="Email">
+        <input type="password" id="pass" class="input-box" style="margin-bottom:20px; width:100%;" placeholder="Пароль">
+        <button onclick="authOp('login')" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer;">Войти в систему</button>
+        <p onclick="authOp('reg')" style="margin-top:20px; color:#8b949e; cursor:pointer; font-size: 13px;">Регистрация нового пилота</p>
     </div>
 
     <div id="screen-main" class="screen">
         <header>
-            <i class="fas fa-bars" onclick="toggleMenu()" style="cursor:pointer"></i>
-            <b>Чаты</b>
-            <i class="fas fa-search" onclick="newChat()" style="cursor:pointer"></i>
+            <i class="fas fa-bars icon-btn" onclick="toggleMenu()"></i>
+            <span style="font-weight:bold;">Чаты</span>
+            <i class="fas fa-search icon-btn" onclick="newChat()"></i>
         </header>
-        <div id="chat-list-dynamic" class="chat-list"></div>
+        <div id="chat-list-dynamic" class="chat-list">
+            </div>
         <div class="fab" onclick="newChat()"><i class="fas fa-plus"></i></div>
     </div>
 
     <div id="screen-chat" class="screen">
         <header>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-arrow-left" onclick="showScreen('screen-main')" style="cursor:pointer"></i>
-                <span id="chat-title">Чат</span>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <i class="fas fa-arrow-left icon-btn" onclick="showScreen('screen-main')"></i>
+                <span id="chat-title" style="font-weight:bold; font-size: 14px;">Чат</span>
             </div>
             <div style="display:flex; gap:15px;">
                 <i class="fas fa-phone icon-btn" onclick="startCall('audio')"></i>
@@ -102,9 +227,17 @@
         <div class="footer">
             <label for="file-input"><i class="fas fa-paperclip icon-btn"></i></label>
             <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
-            <input type="text" id="msg-input" class="input-box" placeholder="Сообщение...">
-            <button class="btn-send" onclick="send()" style="background:none; border:none"><i class="fas fa-paper-plane icon-btn"></i></button>
+            <input type="text" id="msg-input" class="input-box" placeholder="Написать пилоту...">
+            <button onclick="send()" style="background:none; border:none;"><i class="fas fa-paper-plane icon-btn"></i></button>
         </div>
+    </div>
+
+    <div id="video-call-overlay">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <video id="localVideo" autoplay playsinline muted style="width: 30%; position: absolute; bottom: 80px; right: 20px; border: 2px solid var(--accent);"></video>
+        <button class="icon-btn" onclick="endCall()" style="background:#da3633; color:white; width:60px; height:60px; border-radius:50%; border:none; margin-top:20px;">
+            <i class="fas fa-phone-slash"></i>
+        </button>
     </div>
 </div>
 
@@ -151,20 +284,20 @@
                 const cid = child.key;
                 const div = document.createElement('div');
                 div.className = 'chat-card';
-                div.onclick = () => openChat([user.uid, cid].sort().join("_"), "Пилот " + cid.substring(0,5));
-                div.innerHTML = `<div class="avatar">${cid[0].toUpperCase()}</div><div><b>Пилот ${cid.substring(0,5)}</b></div>`;
+                div.onclick = () => openChat([user.uid, cid].sort().join("_"), "Пилот: " + cid.substring(0,6));
+                div.innerHTML = `<div class="avatar">${cid[0].toUpperCase()}</div><div><div style="font-weight:bold;">Пилот ${cid.substring(0,6)}</div><div style="font-size:11px; color:#8b949e;">Связь установлена</div></div>`;
                 list.appendChild(div);
             });
         });
     }
 
     function newChat() {
-        const input = prompt("Email или UID:");
+        const input = prompt("Email или UID пилота:");
         if(!input) return;
         if(input.includes('@')) {
             db.ref('users_by_email/' + btoa(input).replace(/=/g, "")).once('value', s => {
                 if(s.exists()) startChat(s.val());
-                else alert("Не найден");
+                else alert("Пилот не найден");
             });
         } else startChat(input);
     }
@@ -172,7 +305,7 @@
     function startChat(id) {
         if(id === user.uid) return;
         db.ref('users/' + user.uid + '/contacts/' + id).set(true);
-        openChat([user.uid, id].sort().join("_"), "Пилот " + id.substring(0,5));
+        openChat([user.uid, id].sort().join("_"), "Пилот: " + id.substring(0,6));
     }
 
     function openChat(id, name) {
@@ -211,8 +344,8 @@
             const div = document.createElement('div');
             div.className = 'msg ' + (d.u === user.uid ? 'my' : 'their');
             
-            if(d.type === 'image') div.innerHTML = `<img src="${d.t}" style="max-width:100%; border-radius:10px; cursor:pointer" onclick="window.open('${d.t}')">`;
-            else if(d.type === 'file') div.innerHTML = `<a href="${d.t}" target="_blank" style="color:white; text-decoration:none"><i class="fas fa-file"></i> Документ</a>`;
+            if(d.type === 'image') div.innerHTML = `<img src="${d.t}" style="max-width:100%; border-radius:10px; margin-bottom:5px;">`;
+            else if(d.type === 'file') div.innerHTML = `<a href="${d.t}" target="_blank" style="color:white; text-decoration:none;"><i class="fas fa-file"></i> Документ</a>`;
             else {
                 const span = document.createElement('span');
                 span.innerText = d.t;
@@ -230,7 +363,7 @@
         try {
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
             document.getElementById('localVideo').srcObject = localStream;
-        } catch(e) { alert("Нет доступа к камере/микрофону"); endCall(); }
+        } catch(e) { alert("Системе нужен доступ к камере"); endCall(); }
     }
 
     function endCall() {
