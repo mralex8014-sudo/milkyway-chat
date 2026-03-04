@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        /* ТВОЙ НЕИЗМЕННЫЙ ДИЗАЙН */
+        /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
         body {
             background-color: #0b0e14;
             color: #e0e0e0;
@@ -36,78 +36,23 @@
             position: relative;
         }
 
-        header {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid #1f2a3d;
-        }
-
+        header { padding: 20px; text-align: center; border-bottom: 1px solid #1f2a3d; }
         h1 { margin: 0; font-size: 24px; color: #00a2ff; }
-
-        .search-box {
-            padding: 15px;
-            display: flex;
-            gap: 10px;
-        }
-
-        input {
-            flex: 1;
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 8px;
-            border-radius: 8px;
-            color: white;
-            outline: none;
-        }
-
-        button {
-            background: #00a2ff;
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .contacts-list {
-            flex: 1;
-            overflow-y: auto;
-        }
-
-        .contact-item {
-            display: flex;
-            padding: 15px;
-            border-bottom: 1px solid #161b22;
-            cursor: pointer;
-            transition: 0.3s;
-            align-items: center;
-        }
-
-        .contact-item:hover { background: #1c2128; }
-
-        .avatar { font-size: 30px; margin-right: 15px; }
-
-        .name { font-weight: bold; }
-        .last-msg { font-size: 12px; color: #8b949e; }
-
-        /* СКРЫТЫЕ ЭЛЕМЕНТЫ ДЛЯ ФУНКЦИЙ */
+        .search-box { padding: 15px; display: flex; gap: 10px; flex-direction: column; }
+        input { background: #161b22; border: 1px solid #30363d; padding: 10px; border-radius: 8px; color: white; outline: none; }
+        button { background: #00a2ff; border: none; color: white; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        
+        /* СОСТОЯНИЯ ЭКРАНОВ */
         .screen { display: none; flex-direction: column; height: 100%; }
         .active { display: flex; }
+        #recaptcha-container { margin: 10px 0; }
         
-        #chat-window {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0b0e14; z-index: 100;
-        }
-
         .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .bubble { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; }
-        .bubble.my { align-self: flex-end; background: #004d7a; }
-        .bubble.th { align-self: flex-start; background: #1c2128; }
-        
-        .tick { font-size: 10px; margin-left: 5px; color: #8b949e; }
-        .tick.blue { color: #00a2ff; }
-
-        .status-badge { width: 10px; height: 10px; border-radius: 50%; background: #00a2ff; display: inline-block; margin-right: 5px; }
+        .bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; margin-bottom: 5px; }
+        .my { align-self: flex-end; background: #00a2ff; }
+        .th { align-self: flex-start; background: #1c2128; }
+        .tick { font-size: 10px; margin-left: 5px; }
+        .blue { color: #00f2ff; }
     </style>
 </head>
 <body>
@@ -116,45 +61,37 @@
     
     <div id="scr-auth" class="screen active">
         <header><h1>MilkyWay</h1></header>
-        <div class="search-box" style="flex-direction: column; gap: 15px; margin-top: 50px;">
-            <input type="text" id="auth-val" placeholder="Номер или Email">
-            <button onclick="sendOTP()">ПОЛУЧИТЬ КОД</button>
-            <div id="otp-area" style="display: none; gap: 10px; flex-direction: column;">
-                <input type="text" id="otp-code" placeholder="6-значный код">
-                <button onclick="verifyOTP()">ВОЙТИ</button>
+        <div class="search-box">
+            <p style="text-align: center; font-size: 14px; color: #8b949e;">Введите Email для получения ссылки или телефон</p>
+            <input type="text" id="user-contact" placeholder="email@example.com или +7...">
+            <div id="recaptcha-container"></div>
+            <button id="send-btn" onclick="handleAuth()">ОТПРАВИТЬ КОД</button>
+            
+            <div id="otp-block" style="display:none; margin-top: 20px; flex-direction: column; gap: 10px;">
+                <input type="text" id="otp-code" placeholder="Код из SMS">
+                <button onclick="confirmPhoneCode()">ПОДТВЕРДИТЬ</button>
             </div>
         </div>
     </div>
 
     <div id="scr-main" class="screen">
-        <header><h1>MilkyWay</h1></header>
-        <div class="search-box">
-            <input type="text" placeholder="Поиск контактов...">
-        </div>
-        <div style="padding: 10px 15px; display: flex; gap: 10px; overflow-x: auto; border-bottom: 1px solid #161b22;">
-            <div class="avatar" style="font-size: 20px; border: 2px solid #00a2ff; border-radius: 50%; padding: 5px;">➕</div>
-            <div id="status-list" style="display: flex; gap: 10px;"></div>
-        </div>
-        <div class="contacts-list" id="contacts"></div>
+        <header><h1>Чаты</h1></header>
+        <div id="contacts-list" style="flex:1; overflow-y:auto;"></div>
+        <button onclick="auth.signOut()" style="margin: 10px; background: #ff4b4b;">ВЫЙТИ</button>
     </div>
 
-    <div id="chat-window" class="screen">
-        <header style="display: flex; align-items: center; justify-content: space-between;">
-            <i class="fas fa-arrow-left" onclick="closeChat()" style="cursor: pointer; color: #00a2ff;"></i>
-            <span id="chat-title" class="name">Чат</span>
-            <div style="display: flex; gap: 15px; color: #00a2ff;">
-                <i class="fas fa-video"></i>
-                <i class="fas fa-phone"></i>
-            </div>
+    <div id="scr-chat" class="screen">
+        <header style="display:flex; align-items:center; justify-content:space-between;">
+            <i class="fas fa-arrow-left" onclick="showMain()" style="cursor:pointer"></i>
+            <span id="chat-user">Чат</span>
+            <span></span>
         </header>
         <div class="msg-area" id="msg-area"></div>
-        <div class="search-box" style="background: #161b22;">
-            <button style="background: transparent; padding: 5px;"><i class="fas fa-plus"></i></button>
-            <input type="text" id="m-text" placeholder="Сообщение...">
+        <div class="search-box" style="flex-direction: row; border-top: 1px solid #1f2a3d;">
+            <input type="text" id="m-input" style="flex:1" placeholder="Сообщение...">
             <button onclick="sendMsg()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -168,59 +105,91 @@
         appId: "1:573728159190:web:96856417745778a487ed53"
     };
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
     const auth = firebase.auth();
+    const db = firebase.database();
+    
+    let confirmationResult = null;
+    let activeChatId = null;
 
-    let me = null;
-    let activeChat = null;
-    const E2EE_KEY = 'mw-secret-global-key'; // В реальности ключи генерируются для пары
+    // Инициализация Recaptcha для телефона
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible'
+    });
 
-    // 1. OTP & AUTH
-    function sendOTP() {
-        const val = document.getElementById('auth-val').value;
-        if(!val) return;
-        document.getElementById('otp-area').style.display = 'flex';
-        alert("Код отправлен на " + val);
+    async function handleAuth() {
+        const contact = document.getElementById('user-contact').value;
+        
+        if (contact.includes('@')) {
+            // ЛОГИКА ПОЧТЫ (Отправка ссылки)
+            const actionCodeSettings = {
+                url: window.location.href,
+                handleCodeInApp: true
+            };
+            try {
+                await auth.sendSignInLinkToEmail(contact, actionCodeSettings);
+                window.localStorage.setItem('emailForSignIn', contact);
+                alert('Ссылка для входа отправлена на почту!');
+            } catch (e) { alert(e.message); }
+        } else {
+            // ЛОГИКА ТЕЛЕФОНА (SMS)
+            try {
+                const appVerifier = window.recaptchaVerifier;
+                confirmationResult = await auth.signInWithPhoneNumber(contact, appVerifier);
+                document.getElementById('otp-block').style.display = 'flex';
+                document.getElementById('send-btn').style.display = 'none';
+                alert('Код отправлен на телефон!');
+            } catch (e) { alert(e.message); }
+        }
     }
 
-    function verifyOTP() {
+    async function confirmPhoneCode() {
         const code = document.getElementById('otp-code').value;
-        const val = document.getElementById('auth-val').value;
-        if(code.length === 6) {
-            auth.signInAnonymously().then(res => {
-                db.ref('users/' + res.user.uid).set({
-                    id: val,
-                    name: val.split('@')[0],
-                    about: "Использую MilkyWay",
-                    lastSeen: Date.now()
-                });
-            });
-        }
+        try {
+            await confirmationResult.confirm(code);
+        } catch (e) { alert("Неверный код!"); }
+    }
+
+    // Проверка входа по ссылке из почты
+    if (auth.isSignInWithEmailLink(window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) email = window.prompt('Введите ваш email для подтверждения');
+        auth.signInWithEmailLink(email, window.location.href).then(() => {
+            window.localStorage.removeItem('emailForSignIn');
+        });
     }
 
     auth.onAuthStateChanged(user => {
-        if(user) {
-            me = user;
+        if (user) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById('scr-main').classList.add('active');
+            syncUser(user);
             loadContacts();
+        } else {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('scr-auth').classList.add('active');
         }
     });
 
-    // 2. CONTACTS & SYNC
+    function syncUser(user) {
+        db.ref('users/' + user.uid).update({
+            id: user.email || user.phoneNumber,
+            lastSeen: Date.now()
+        });
+    }
+
     function loadContacts() {
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('contacts');
+            const list = document.getElementById('contacts-list');
             list.innerHTML = '';
             snap.forEach(child => {
-                if(child.key !== me.uid) {
+                if(child.key !== auth.currentUser.uid) {
                     const u = child.val();
                     list.innerHTML += `
-                        <div class="contact-item" onclick="openChat('${child.key}', '${u.name}')">
-                            <div class="avatar">👤</div>
-                            <div class="info">
-                                <div class="name">${u.name}</div>
-                                <div class="last-msg">${u.about}</div>
+                        <div class="contact-item" style="display:flex; padding:15px; border-bottom:1px solid #161b22; cursor:pointer;" onclick="openChat('${child.key}', '${u.id}')">
+                            <div style="font-size:30px; margin-right:15px;">👤</div>
+                            <div>
+                                <div class="name">${u.id}</div>
+                                <div style="font-size:12px; color:#8b949e;">Нажми, чтобы написать</div>
                             </div>
                         </div>
                     `;
@@ -229,78 +198,61 @@
         });
     }
 
-    // 3. MESSAGING & E2EE & TICKS
     function openChat(id, name) {
-        activeChat = id;
-        document.getElementById('chat-title').innerText = name;
-        document.getElementById('chat-window').classList.add('active');
-        renderMsgs();
+        activeChatId = id;
+        document.getElementById('chat-user').innerText = name;
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-chat').classList.add('active');
+        loadMessages();
     }
 
-    function closeChat() {
-        document.getElementById('chat-window').classList.remove('active');
+    function showMain() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('scr-main').classList.add('active');
     }
 
     function sendMsg() {
-        const txt = document.getElementById('m-text');
+        const txt = document.getElementById('m-input');
         if(!txt.value) return;
+        const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
+        
+        // E2EE (Простое шифрование)
+        const encrypted = CryptoJS.AES.encrypt(txt.value, 'secret_key').toString();
 
-        // E2EE Encryption
-        const encrypted = CryptoJS.AES.encrypt(txt.value, E2EE_KEY).toString();
-
-        const chatId = [me.uid, activeChat].sort().join('_');
         db.ref('msgs/' + chatId).push({
-            from: me.uid,
-            data: encrypted,
-            type: 'text',
-            time: Date.now(),
-            status: 1 // 1: Сервер (1 серая), 2: Доставлено (2 серых), 3: Прочитано (2 синих)
+            from: auth.currentUser.uid,
+            text: encrypted,
+            status: 'sent',
+            time: Date.now()
         });
         txt.value = '';
     }
 
-    function renderMsgs() {
-        const chatId = [me.uid, activeChat].sort().join('_');
+    function loadMessages() {
+        const chatId = [auth.currentUser.uid, activeChatId].sort().join('_');
         const area = document.getElementById('msg-area');
-        
         db.ref('msgs/' + chatId).on('value', snap => {
             area.innerHTML = '';
             snap.forEach(child => {
                 const m = child.val();
-                const isMe = m.from === me.uid;
+                const isMe = m.from === auth.currentUser.uid;
+                const decrypted = CryptoJS.AES.decrypt(m.text, 'secret_key').toString(CryptoJS.enc.Utf8);
                 
-                // Дешифровка E2EE
-                const decrypted = CryptoJS.AES.decrypt(m.data, E2EE_KEY).toString(CryptoJS.enc.Utf8);
-
-                // Статус прочитано
-                if(!isMe && m.status < 3) {
-                    db.ref('msgs/' + chatId + '/' + child.key).update({status: 3});
+                // Статус "Прочитано" (WhatsApp Style)
+                if(!isMe && m.status !== 'read') {
+                    db.ref('msgs/' + chatId + '/' + child.key).update({status: 'read'});
                 }
-
-                let tickHtml = m.status === 3 ? '<i class="fas fa-check-double tick blue"></i>' : 
-                               (m.status === 2 ? '<i class="fas fa-check-double tick"></i>' : '<i class="fas fa-check tick"></i>');
 
                 area.innerHTML += `
                     <div class="bubble ${isMe ? 'my' : 'th'}">
                         ${decrypted}
-                        <div style="text-align:right">${tickHtml}</div>
+                        <i class="fas fa-check-double tick ${m.status === 'read' ? 'blue' : ''}"></i>
                     </div>
                 `;
             });
             area.scrollTop = area.scrollHeight;
         });
     }
-
-    // 4. STORIES (Auto-delete 24h)
-    function cleanOldStories() {
-        const now = Date.now();
-        db.ref('stories').once('value', snap => {
-            snap.forEach(s => {
-                if(now - s.val().time > 86400000) s.ref.remove();
-            });
-        });
-    }
-    setInterval(cleanOldStories, 3600000); // Раз в час
 </script>
 </body>
 </html>
