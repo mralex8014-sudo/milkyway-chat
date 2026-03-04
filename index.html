@@ -3,127 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Elite Custom</title>
+    <title>MilkyWay Messenger</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --main-bg: #0b0e11; --panel-bg: #15191c; --header-bg: #1f2428; --accent: #0084ff; --text: #e1e1e1; --my-msg: #004a87; --he-msg: #262d31; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--main-bg); color: var(--text); font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
-
-        .app-container { width: 100%; max-width: 450px; height: 100%; background: var(--panel-bg); position: relative; display: flex; flex-direction: column; border-right: 1px solid #222; border-left: 1px solid #222; }
+        :root { 
+            --space-bg: #05070a; 
+            --panel-bg: rgba(20, 24, 31, 0.95);
+            --accent: #7d5fff; /* Космический фиолетовый/синий */
+            --text: #ffffff; 
+            --my-bubble: #4b39b5;
+            --he-bubble: #1e272e;
+        }
         
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background: var(--space-bg); 
+            color: var(--text); 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            overflow: hidden;
+            background-image: radial-gradient(circle at center, #1a1a2e 0%, #05070a 100%);
+        }
+
+        .app-container { 
+            width: 100%; 
+            max-width: 450px; 
+            height: 100%; 
+            background: var(--panel-bg); 
+            position: relative; 
+            display: flex; 
+            flex-direction: column;
+            border-left: 1px solid rgba(255,255,255,0.05);
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
         .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: var(--panel-bg); z-index: 10; }
         .active { display: flex; }
 
         /* HEADER */
-        .header { background: var(--header-bg); height: 65px; padding: 0 15px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; z-index: 20; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
-        .header h2 { font-size: 18px; flex: 1; color: var(--accent); }
-        .header .avatar { width: 40px; height: 40px; border-radius: 50%; background: #333; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; }
-        .online-mark { width: 12px; height: 12px; background: #00c853; border: 2px solid var(--header-bg); border-radius: 50%; position: absolute; bottom: 0; right: 0; }
+        .header { 
+            background: rgba(30, 39, 46, 0.8);
+            backdrop-filter: blur(10px);
+            height: 70px; 
+            padding: 0 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            flex-shrink: 0; 
+            z-index: 20;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .header h2 { font-size: 22px; flex: 1; letter-spacing: 1px; font-weight: 800; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .avatar { width: 42px; height: 42px; border-radius: 50%; background: #2f3640; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid var(--accent); }
+        .online-dot { width: 12px; height: 12px; background: #00d2d3; border: 2px solid #1e272e; border-radius: 50%; position: absolute; bottom: 0; right: 0; }
 
         /* LISTS */
-        .list-area { flex: 1; overflow-y: auto; }
-        .user-row { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #1f2428; cursor: pointer; transition: 0.2s; }
-        .user-row:hover { background: #1f2428; }
-        .user-row b { display: block; font-size: 16px; }
-        .user-row small { color: #8696a0; }
+        .list-area { flex: 1; overflow-y: auto; padding-top: 5px; }
+        .user-row { padding: 15px 20px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .user-row:hover { background: rgba(125, 95, 255, 0.1); }
+        .user-row b { font-size: 16px; color: #fff; }
+        .user-row small { color: #8696a0; font-size: 12px; }
 
         /* CHAT WINDOW */
-        #scr-chat { transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 30; }
+        #scr-chat { transform: translateX(100%); transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); z-index: 30; }
         #scr-chat.open { transform: translateX(0); }
-        .chat-content { flex: 1; overflow-y: auto; padding: 20px; background: var(--main-bg); display: flex; flex-direction: column; gap: 8px; }
         
-        /* BUBBLES */
-        .bubble { padding: 10px 14px; border-radius: 12px; max-width: 80%; font-size: 14.5px; line-height: 1.4; position: relative; }
-        .bubble.me { background: var(--my-msg); align-self: flex-end; border-bottom-right-radius: 2px; }
-        .bubble.he { background: var(--he-msg); align-self: flex-start; border-bottom-left-radius: 2px; }
-        .time { font-size: 10px; opacity: 0.6; margin-top: 5px; text-align: right; }
+        .chat-content { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            background: url('https://i.pinimg.com/originals/82/3a/04/823a042a98f7e2f9d14a6016f455c11f.jpg'); /* Космический фон */
+            background-size: cover;
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        
+        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 80%; font-size: 15px; position: relative; color: white; backdrop-filter: blur(2px); }
+        .bubble.me { background: var(--my-bubble); align-self: flex-end; border-bottom-right-radius: 4px; box-shadow: 0 4px 15px rgba(125, 95, 255, 0.3); }
+        .bubble.he { background: var(--he-bubble); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid rgba(255,255,255,0.1); }
+        .time { font-size: 10px; opacity: 0.5; margin-top: 6px; text-align: right; }
 
-        /* PROFILE OVERLAY */
-        .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--panel-bg); z-index: 100; flex-direction: column; }
+        /* OVERLAYS */
+        .overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--space-bg); z-index: 100; flex-direction: column; }
         .overlay.active { display: flex; }
-        .p-info { padding: 40px 20px; text-align: center; }
-        .p-ava { width: 120px; height: 120px; border-radius: 50%; background: #333; margin: 0 auto 20px; font-size: 50px; display: flex; align-items: center; justify-content: center; border: 4px solid var(--accent); }
+        .p-box { padding: 50px 30px; text-align: center; }
+        .p-ava-large { width: 130px; height: 130px; border-radius: 50%; background: #2f3640; margin: 0 auto 25px; font-size: 60px; display: flex; align-items: center; justify-content: center; border: 3px solid var(--accent); box-shadow: 0 0 20px var(--accent); }
 
-        /* INPUT */
-        .input-bar { background: var(--header-bg); padding: 12px; display: flex; gap: 10px; align-items: center; }
-        .input-bar input { flex: 1; background: #2a2f32; border: none; padding: 12px 18px; border-radius: 25px; color: white; outline: none; }
-        .icon-btn { color: var(--accent); font-size: 20px; cursor: pointer; }
-
-        /* AUTH */
-        .auth-card { padding: 40px 25px; text-align: center; justify-content: center; height: 100%; }
-        .auth-card input { width: 100%; padding: 15px; margin-bottom: 15px; background: #1f2428; border: 1px solid #333; border-radius: 10px; color: white; }
-        .main-btn { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+        /* INPUTS & BUTTONS */
+        .input-bar { background: rgba(30, 39, 46, 0.9); padding: 15px; display: flex; gap: 12px; align-items: center; }
+        .input-bar input { flex: 1; background: #2f3640; border: none; padding: 14px 20px; border-radius: 30px; color: white; outline: none; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-send { color: var(--accent); font-size: 24px; cursor: pointer; transition: 0.2s; }
+        .btn-send:hover { transform: scale(1.1); }
+        
+        .main-btn { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(125, 95, 255, 0.4); }
+        .auth-input { width: 100%; padding: 16px; margin-bottom: 15px; background: #1e272e; border: 1px solid #2f3640; border-radius: 12px; color: white; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div id="scr-auth" class="screen auth-card">
-        <h1 style="color:var(--accent); font-size: 32px; margin-bottom: 10px;">MilkyWay</h1>
-        <p style="color:#8696a0; margin-bottom: 40px;">Original Elite Messenger</p>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="pass" placeholder="Пароль">
-        <button class="main-btn" onclick="authHandle(true)">ВОЙТИ</button>
-        <p onclick="authHandle(false)" style="margin-top:20px; font-size:14px; color:var(--accent); cursor:pointer;">Создать аккаунт</p>
+    <div id="scr-auth" class="screen active" style="padding: 40px 30px; text-align: center; justify-content: center;">
+        <h1 style="color:var(--accent); font-size: 38px; margin-bottom: 5px; letter-spacing: 2px;">MILKYWAY</h1>
+        <p style="color:#8696a0; margin-bottom: 50px;">Космический мессенджер</p>
+        <input type="email" id="email" class="auth-input" placeholder="Email">
+        <input type="password" id="pass" class="auth-input" placeholder="Пароль">
+        <button class="main-btn" onclick="authHandle(true)">ВОЙТИ В СИСТЕМУ</button>
+        <p onclick="authHandle(false)" style="margin-top:25px; font-size:14px; color:var(--accent); cursor:pointer; font-weight: 600;">СОЗДАТЬ АККАУНТ</p>
     </div>
 
     <div id="scr-list" class="screen">
         <div class="header">
             <div class="avatar" onclick="toggleOverlay('my-profile', true)">👤</div>
-            <h2>MilkyWay</h2>
-            <i class="fas fa-ellipsis-v icon-btn" onclick="toggleOverlay('my-profile', true)"></i>
+            <h2>MILKYWAY</h2>
+            <i class="fas fa-bars icon-btn" style="color:var(--accent); cursor:pointer;" onclick="toggleOverlay('my-profile', true)"></i>
         </div>
         <div id="users-list" class="list-area"></div>
     </div>
 
     <div id="scr-chat" class="screen">
         <div class="header">
-            <i class="fas fa-arrow-left icon-btn" onclick="closeChat()"></i>
-            <div class="avatar" style="width:35px; height:35px;" onclick="viewOpponent()">👤</div>
+            <i class="fas fa-chevron-left icon-btn" style="color:var(--accent); cursor:pointer;" onclick="closeChat()"></i>
+            <div class="avatar" style="width:38px; height:38px;" onclick="viewOpponent()">👤</div>
             <div style="flex:1" onclick="viewOpponent()">
-                <b id="chat-name">Чат</b><br>
-                <small id="chat-status" style="color:var(--accent); font-size:11px;"></small>
+                <b id="chat-name" style="color:#fff; font-size: 16px;">Чат</b><br>
+                <small id="chat-status" style="color:var(--accent); font-size:11px; font-weight: bold;"></small>
             </div>
         </div>
         <div id="chat-box" class="chat-content"></div>
         <div class="input-bar">
-            <input type="text" id="msg-input" placeholder="Сообщение..." oninput="sendTyping()">
-            <i class="fas fa-paper-plane icon-btn" onclick="doSend()"></i>
+            <input type="text" id="msg-input" placeholder="Введите сообщение..." oninput="sendTyping()">
+            <i class="fas fa-paper-plane btn-send" onclick="doSend()"></i>
         </div>
     </div>
 
     <div id="my-profile" class="overlay">
         <div class="header">
-            <i class="fas fa-arrow-left icon-btn" onclick="toggleOverlay('my-profile', false)"></i>
-            <h2>Мой профиль</h2>
+            <i class="fas fa-times icon-btn" style="color:var(--accent); cursor:pointer;" onclick="toggleOverlay('my-profile', false)"></i>
+            <h2>ПРОФИЛЬ</h2>
         </div>
-        <div class="p-info">
-            <div class="p-ava">👤</div>
-            <input type="text" id="my-name-input" placeholder="Ваше имя">
-            <button class="main-btn" onclick="saveMyName()">СОХРАНИТЬ</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; background:none; border:1px solid #ff3b30; color:#ff3b30;" class="main-btn">ВЫЙТИ</button>
+        <div class="p-box">
+            <div class="p-ava-large">👤</div>
+            <p style="color:#8696a0; margin-bottom: 10px; font-size: 13px;">КАК ВАС ВИДЯТ ДРУГИЕ:</p>
+            <input type="text" id="my-name-input" class="auth-input" placeholder="Ваше имя">
+            <button class="main-btn" onclick="saveMyName()">ОБНОВИТЬ ДАННЫЕ</button>
+            <button onclick="auth.signOut()" style="margin-top:30px; background:none; border:1px solid #ff3b30; color:#ff3b30;" class="main-btn">ВЫЙТИ ИЗ СЕТИ</button>
         </div>
     </div>
 
     <div id="op-profile" class="overlay">
         <div class="header">
-            <i class="fas fa-arrow-left icon-btn" onclick="toggleOverlay('op-profile', false)"></i>
-            <h2>Информация</h2>
+            <i class="fas fa-times icon-btn" style="color:var(--accent); cursor:pointer;" onclick="toggleOverlay('op-profile', false)"></i>
+            <h2>ИНФОРМАЦИЯ</h2>
         </div>
-        <div class="p-info">
-            <div class="p-ava">👤</div>
-            <h1 id="op-name">Имя</h1>
+        <div class="p-box">
+            <div class="p-ava-large">👤</div>
+            <h1 id="op-name" style="color:#fff;">Имя</h1>
             <p id="op-mail" style="color:#8696a0; margin-top:10px;"></p>
-            <div id="op-stat" style="margin-top:20px; color:var(--accent);"></div>
+            <div id="op-stat" style="margin-top:25px; color:var(--accent); font-weight: bold;"></div>
         </div>
     </div>
 </div>
 
 <script>
+    // Конфигурация Firebase
     const config = {
         apiKey: "AIzaSyA-bMCUsWhvoMO6uBMV9Z2NKZjvqFNwjeQ",
         authDomain: "wm-message.firebaseapp.com",
@@ -148,6 +197,7 @@
 
     async function authHandle(isLog) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        if(!e || p.length < 6) return alert("Введите корректный Email и пароль от 6 символов");
         try {
             if(isLog) await auth.signInWithEmailAndPassword(e, p);
             else {
@@ -168,8 +218,10 @@
     });
 
     function saveMyName() {
-        db.ref('users/' + auth.currentUser.uid).update({ name: document.getElementById('my-name-input').value });
-        alert("Имя обновлено!");
+        const name = document.getElementById('my-name-input').value;
+        if(!name) return;
+        db.ref('users/' + auth.currentUser.uid).update({ name: name });
+        alert("Имя в системе обновлено!");
     }
 
     function loadUsers() {
@@ -178,12 +230,13 @@
             snap.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
                     const d = u.val();
+                    const name = d.name || d.email;
                     list.innerHTML += `
-                    <div class="user-row" onclick="openChat('${u.key}','${d.name || d.email}')">
-                        <div class="avatar">👤 ${d.status==='online'?'<div class="online-mark"></div>':''}</div>
+                    <div class="user-row" onclick="openChat('${u.key}','${name}')">
+                        <div class="avatar">👤 ${d.status==='online'?'<div class="online-dot"></div>':''}</div>
                         <div style="flex:1">
-                            <b>${d.name || d.email}</b>
-                            <small>${d.status==='online'?'в сети':'был недавно'}</small>
+                            <b>${name}</b><br>
+                            <small>${d.status==='online'?'Сейчас в сети':'Не в сети'}</small>
                         </div>
                     </div>`;
                 }
@@ -211,21 +264,21 @@
         });
 
         db.ref('typing/' + id + '/' + auth.currentUser.uid).on('value', s => {
-            document.getElementById('chat-status').innerText = s.val() ? 'печатает...' : '';
+            document.getElementById('chat-status').innerText = s.val() ? 'печатает...' : 'в сети';
         });
     }
 
     function viewOpponent() {
         document.getElementById('op-name').innerText = oppData.name || 'Пользователь';
         document.getElementById('op-mail').innerText = oppData.email || '';
-        document.getElementById('op-stat').innerText = oppData.status === 'online' ? '● Сейчас в сети' : '○ Не в сети';
+        document.getElementById('op-stat').innerText = oppData.status === 'online' ? '● СЕЙЧАС В СЕТИ' : '○ ВНЕ ЗОНЫ ДОСТУПА';
         toggleOverlay('op-profile', true);
     }
 
     function closeChat() { document.getElementById('scr-chat').classList.remove('open'); }
 
     function doSend() {
-        const inp = document.getElementById('msg-input'); if(!inp.value) return;
+        const inp = document.getElementById('msg-input'); if(!inp.value.trim()) return;
         const cid = [auth.currentUser.uid, selId].sort().join('_');
         db.ref('msgs/' + cid).push({ f: auth.currentUser.uid, txt: inp.value, ts: Date.now() });
         inp.value = '';
