@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Premium</title>
+    <title>MilkyWay Stable</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -11,111 +11,91 @@
     <style>
         :root { --neon: #00d2ff; --bg: #05070a; --panel: #0d1117; --border: #1f2937; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        
         body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; display: flex; justify-content: center; }
         
+        /* Главный контейнер */
         .app { width: 100%; max-width: 450px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
 
-        /* ХЕДЕР С НЕОНОМ */
-        header { 
-            padding: 15px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: space-between; z-index: 10;
-        }
-        .logo-neon { 
-            font-size: 24px; font-weight: 900; color: var(--neon);
-            text-shadow: 0 0 10px rgba(0, 210, 255, 0.7); letter-spacing: 1px;
-        }
-
-        /* БОКОВОЕ МЕНЮ (СКРЫТО ПО УМОЛЧАНИЮ) */
+        /* СКРЫТОЕ МЕНЮ */
         .sidebar {
             position: fixed; top: 0; left: -100%; width: 300px; height: 100%;
-            background: #0d1117; z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #0d1117; z-index: 2000; transition: 0.3s;
             border-right: 1px solid var(--border); padding: 40px 25px;
+            display: block; /* Важно: позиция управляет видимостью */
         }
-        .sidebar.open { left: 0; box-shadow: 20px 0 50px rgba(0,0,0,0.8); }
-        
-        /* ЗАТЕМНЕНИЕ ПРИ ОТКРЫТОМ МЕНЮ */
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); display: none; z-index: 1500; backdrop-filter: blur(3px);
-        }
+        .sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
 
-        /* ПЛЮСИК В КРУЖКЕ (FAB) */
-        .fab {
-            position: absolute; bottom: 30px; right: 25px; width: 60px; height: 60px;
-            background: var(--neon); border-radius: 50%; display: grid; place-items: center;
-            font-size: 24px; color: #fff; cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); z-index: 100;
-        }
+        /* Шапка */
+        header { padding: 15px 20px; background: var(--panel); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+        .logo-neon { font-size: 24px; font-weight: 900; color: var(--neon); text-shadow: 0 0 10px var(--neon); }
 
-        /* СПИСОК ЧАТОВ */
-        .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+        /* Экраны */
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; }
         .active { display: flex; }
+
+        /* Чаты */
         #chat-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .chat-row { 
-            padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex; align-items: center; gap: 15px; cursor: pointer;
-        }
-        .av-circle { width: 45px; height: 45px; border-radius: 50%; background: var(--neon); display: grid; place-items: center; font-weight: bold; }
+        .chat-row { padding: 15px; border-bottom: 1px solid #1f2937; display: flex; align-items: center; gap: 15px; cursor: pointer; }
+        .av { width: 45px; height: 45px; border-radius: 50%; background: var(--neon); display: grid; place-items: center; font-weight: bold; color: #000; }
 
-        /* ВХОД */
-        .auth-screen { padding: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; text-align: center; }
-        .auth-screen input { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid var(--border); border-radius: 10px; color: #fff; }
-        .btn-go { padding: 15px; background: var(--neon); border: none; border-radius: 10px; font-weight: bold; color: #fff; cursor: pointer; }
+        /* Кнопка поиска (Плюс) */
+        .fab { position: absolute; bottom: 30px; right: 25px; width: 60px; height: 60px; background: var(--neon); border-radius: 50%; display: grid; place-items: center; font-size: 24px; color: #000; cursor: pointer; box-shadow: 0 0 20px rgba(0, 210, 255, 0.5); z-index: 100; }
 
-        /* ЧАТ */
-        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .bubble { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; }
+        /* Авторизация */
+        .auth-box { padding: 40px; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+        input { width: 100%; padding: 15px; margin-bottom: 15px; background: #000; border: 1px solid var(--border); border-radius: 10px; color: #fff; outline: none; }
+        .btn { padding: 15px; background: var(--neon); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: #000; }
+
+        /* Сообщения */
+        #msgs { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .m { max-width: 80%; padding: 10px 15px; border-radius: 15px; font-size: 14px; }
         .my { align-self: flex-end; background: #005c4b; }
-        .their { align-self: flex-start; background: #202c33; }
-        .input-bar { padding: 15px; background: var(--panel); display: flex; gap: 10px; }
-        .input-bar input { flex: 1; background: #000; border: 1px solid var(--border); padding: 10px; border-radius: 20px; color: #fff; outline: none; }
+        .th { align-self: flex-start; background: #202c33; }
+        .in-bar { padding: 15px; background: var(--panel); display: flex; gap: 10px; }
     </style>
 </head>
 <body>
 
-<div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+<div id="ovl" class="overlay" onclick="tglM()"></div>
 
-<div id="side-menu" class="sidebar">
+<div id="side" class="sidebar">
     <div class="logo-neon" style="margin-bottom:40px;">MilkyWay</div>
-    <div style="display:flex; flex-direction:column; gap:25px;">
-        <div onclick="alert('Профиль')"><i class="fas fa-user-circle"></i> Мой аккаунт</div>
-        <div onclick="alert('Настройки')"><i class="fas fa-cog"></i> Настройки</div>
-        <div onclick="auth.signOut()" style="color:#ff4b4b; margin-top:30px;"><i class="fas fa-power-off"></i> Выйти</div>
-    </div>
+    <div onclick="alert('Профиль')" style="margin-bottom:20px; cursor:pointer;"><i class="fas fa-user"></i> Профиль</div>
+    <div onclick="auth.signOut()" style="color: #ff4b4b; cursor:pointer;"><i class="fas fa-power-off"></i> Выйти</div>
 </div>
 
 <div class="app">
-    <div id="scr-auth" class="screen active">
-        <div class="auth-screen">
-            <div class="logo-neon" style="font-size:40px; margin-bottom:40px;">MilkyWay</div>
+    <div id="scr-a" class="screen active">
+        <div class="auth-box">
+            <div class="logo-neon" style="font-size:40px; text-align:center; margin-bottom:40px;">MilkyWay</div>
             <input type="email" id="email" placeholder="Email">
             <input type="password" id="pass" placeholder="Пароль">
-            <button class="btn-go" onclick="handleAuth('login')">ВОЙТИ</button>
-            <p onclick="handleAuth('reg')" style="margin-top:20px; color:var(--neon); cursor:pointer; font-size:13px;">Создать аккаунт</p>
+            <button class="btn" onclick="authOp('login')">ВОЙТИ</button>
+            <p onclick="authOp('reg')" style="text-align:center; margin-top:20px; color:var(--neon); cursor:pointer;">Регистрация</p>
         </div>
     </div>
 
-    <div id="scr-main" class="screen">
+    <div id="scr-m" class="screen">
         <header>
-            <i class="fas fa-bars" style="font-size:20px; cursor:pointer;" onclick="toggleMenu()"></i>
+            <i class="fas fa-bars" onclick="tglM()" style="cursor:pointer; font-size:20px;"></i>
             <div class="logo-neon">MilkyWay</div>
             <div style="width:20px;"></div>
         </header>
         <div id="chat-list"></div>
-        <div class="fab" onclick="addUser()"><i class="fas fa-plus"></i></div>
+        <div class="fab" onclick="addU()"><i class="fas fa-plus"></i></div>
     </div>
 
-    <div id="scr-chat" class="screen">
+    <div id="scr-c" class="screen">
         <header>
-            <i class="fas fa-chevron-left" onclick="show('scr-main')" style="cursor:pointer;"></i>
-            <b id="chat-title">Чат</b>
+            <i class="fas fa-chevron-left" onclick="sh('scr-m')"></i>
+            <b id="c-tit">Чат</b>
             <div style="width:20px;"></div>
         </header>
-        <div id="messages"></div>
-        <div class="input-bar">
-            <input type="text" id="m-input" placeholder="Сообщение...">
-            <i class="fas fa-paper-plane" onclick="send()" style="color:var(--neon); font-size:22px; cursor:pointer;"></i>
+        <div id="msgs"></div>
+        <div class="in-bar">
+            <input type="text" id="m-in" placeholder="Сообщение...">
+            <i class="fas fa-paper-plane" onclick="snd()" style="color:var(--neon); font-size:22px; cursor:pointer;"></i>
         </div>
     </div>
 </div>
@@ -132,82 +112,85 @@
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth(), db = firebase.database();
-    let me = null, activeId = null;
+    let me = null, cur = null;
 
-    function toggleMenu() {
-        const m = document.getElementById('side-menu');
-        const o = document.getElementById('overlay');
-        const isOpen = m.classList.toggle('open');
-        o.style.display = isOpen ? 'block' : 'none';
+    function tglM() {
+        const s = document.getElementById('side'), o = document.getElementById('ovl');
+        s.classList.toggle('open');
+        o.style.display = s.classList.contains('open') ? 'block' : 'none';
     }
 
-    function show(id) {
+    function sh(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        // Закрываем меню при переключении экрана
-        document.getElementById('side-menu').classList.remove('open');
-        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('side').classList.remove('open');
+        document.getElementById('ovl').style.display = 'none';
     }
 
-    function handleAuth(t) {
+    function authOp(t) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(t === 'login') auth.signInWithEmailAndPassword(e,p).catch(a => alert(a.message));
-        else auth.createUserWithEmailAndPassword(e,p).then(u => {
-            db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
-            db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
-        });
+        if(!e || !p) return alert("Заполни поля!");
+        if(t === 'login') {
+            auth.signInWithEmailAndPassword(e,p).catch(err => alert("Ошибка входа: " + err.message));
+        } else {
+            auth.createUserWithEmailAndPassword(e,p).then(u => {
+                db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
+                db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
+            }).catch(err => alert("Ошибка регистрации: " + err.message));
+        }
     }
 
     auth.onAuthStateChanged(u => {
-        if(u) { me = u; show('scr-main'); loadChats(); }
-        else show('scr-auth');
+        if(u) { me = u; sh('scr-m'); load(); }
+        else { sh('scr-a'); }
     });
 
-    function loadChats() {
-        const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-row" onclick="openChat('global','Общий чат')"><div class="av-circle">G</div><b>Общий чат</b></div>`;
+    function load() {
+        const l = document.getElementById('chat-list');
+        l.innerHTML = `<div class="chat-row" onclick="opC('global','Общий чат')"><div class="av">G</div><b>Общий чат</b></div>`;
         db.ref('users/'+me.uid+'/contacts').on('value', s => {
             s.forEach(c => {
                 db.ref('users/'+c.key).once('value', us => {
                     const d = us.val();
                     const div = document.createElement('div'); div.className = 'chat-row';
-                    div.onclick = () => openChat(c.key, d.name);
-                    div.innerHTML = `<div class="av-circle">${d.name[0].toUpperCase()}</div><b>${d.name}</b>`;
-                    list.appendChild(div);
+                    div.onclick = () => opC(c.key, d.name);
+                    div.innerHTML = `<div class="av">${d.name[0].toUpperCase()}</div><b>${d.name}</b>`;
+                    l.appendChild(div);
                 });
             });
         });
     }
 
-    function openChat(id, name) {
-        activeId = id === 'global' ? 'global' : [me.uid, id].sort().join("_");
-        document.getElementById('chat-title').innerText = name;
-        show('scr-chat');
-        db.ref('msgs/'+activeId).off();
-        const area = document.getElementById('messages'); area.innerHTML = '';
-        db.ref('msgs/'+activeId).on('child_added', s => {
+    function opC(id, name) {
+        cur = id === 'global' ? 'global' : [me.uid, id].sort().join("_");
+        document.getElementById('c-tit').innerText = name;
+        sh('scr-c');
+        db.ref('msgs/'+cur).off();
+        const mBox = document.getElementById('msgs'); mBox.innerHTML = '';
+        db.ref('msgs/'+cur).on('child_added', s => {
             const m = s.val();
-            const div = document.createElement('div');
-            div.className = `bubble ${m.from === me.uid ? 'my' : 'their'}`;
-            div.innerText = m.txt;
-            area.appendChild(div); area.scrollTop = area.scrollHeight;
+            const d = document.createElement('div');
+            d.className = `m ${m.f === me.uid ? 'my' : 'th'}`;
+            d.innerText = m.t;
+            mBox.appendChild(d); mBox.scrollTop = mBox.scrollHeight;
         });
     }
 
-    function send() {
-        const i = document.getElementById('m-input');
+    function snd() {
+        const i = document.getElementById('m-in');
         if(!i.value.trim()) return;
-        db.ref('msgs/'+activeId).push({from: me.uid, txt: i.value, time: Date.now()});
+        db.ref('msgs/'+cur).push({f: me.uid, t: i.value, time: Date.now()});
         i.value = '';
     }
 
-    function addUser() {
-        const e = prompt("Email пилота:");
+    function addU() {
+        const e = prompt("Email:");
         if(e) db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).once('value', s => {
             if(s.exists()) db.ref('users/'+me.uid+'/contacts/'+s.val()).set(true);
+            else alert("Не найден");
         });
     }
-    document.getElementById('m-input').onkeypress = e => { if(e.key==='Enter') send(); };
+    document.getElementById('m-in').onkeypress = e => { if(e.key==='Enter') snd(); };
 </script>
 </body>
 </html>
