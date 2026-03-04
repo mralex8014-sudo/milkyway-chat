@@ -3,88 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay WhatsApp Pro</title>
+    <title>MilkyWay Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { background: #0b0e14; color: #e9edef; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        .app-container { width: 360px; height: 640px; background: #111b21; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #2a3942; }
+        .app { width: 360px; height: 640px; background: #111b21; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; border: 1px solid #2a3942; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        .active { display: flex; }
+
+        /* ВХОД */
+        .auth-screen { padding: 40px 20px; text-align: center; justify-content: center; }
+        .logo { font-size: 32px; color: #00a2ff; margin-bottom: 30px; font-weight: bold; }
+        input { width: 100%; background: #2a3942; border: 1px solid #3b4a54; padding: 14px; border-radius: 10px; color: white; margin-bottom: 12px; outline: none; }
+        .btn-blue { background: #00a2ff; color: white; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
 
         /* HEADER */
-        .header { background: #202c33; padding: 10px 15px; display: flex; align-items: center; gap: 15px; z-index: 10; }
-        .header h2 { font-size: 18px; flex: 1; color: #e9edef; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; background: #00a2ff; display: inline-block; margin-right: 5px; }
-        .online { background: #00af9c !important; }
+        .header { background: #202c33; padding: 12px 15px; display: flex; align-items: center; gap: 12px; height: 60px; border-bottom: 1px solid #2a3942; }
+        .header h2 { font-size: 17px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .avatar { width: 40px; height: 40px; background: #394145; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #aebac1; font-size: 18px; position: relative; }
+        .online-dot { width: 10px; height: 10px; background: #00af9c; border-radius: 50%; border: 2px solid #202c33; position: absolute; bottom: 0; right: 0; display: none; }
 
-        /* СПИСОК КОНТАКТОВ */
+        /* СПИСОК */
         .contact-list { flex: 1; overflow-y: auto; }
-        .contact-item { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222d34; cursor: pointer; transition: 0.2s; }
-        .contact-item:hover { background: #2a3942; }
-        .avatar { width: 50px; height: 50px; background: #394145; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #aebac1; position: relative; }
-        .online-indicator { width: 12px; height: 12px; background: #00af9c; border: 2px solid #111b21; border-radius: 50%; position: absolute; bottom: 2px; right: 2px; display: none; }
+        .item { padding: 12px 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222d34; cursor: pointer; }
+        .item:hover { background: #202c33; }
+        .item-info { flex: 1; }
+        .item-name { font-weight: bold; font-size: 15px; margin-bottom: 3px; }
+        .item-msg { font-size: 13px; color: #8696a0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        /* ОКНО ЧАТА */
-        #chat-screen { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #0b141a; transition: 0.3s; z-index: 20; display: flex; flex-direction: column; }
-        #chat-screen.active { left: 0; }
-        .messages { flex: 1; overflow-y: auto; padding: 20px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-alpha: 0.05; display: flex; flex-direction: column; gap: 5px; }
-        
-        /* ПУЗЫРИ */
-        .m { padding: 6px 12px; border-radius: 8px; max-width: 80%; font-size: 14px; position: relative; box-shadow: 0 1px 1px rgba(0,0,0,0.3); }
-        .m.me { background: #005c4b; align-self: flex-end; border-top-right-radius: 2px; }
-        .m.he { background: #202c33; align-self: flex-start; border-top-left-radius: 2px; }
-        .m-time { font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 3px; }
+        /* ЧАТ */
+        #chat-screen { position: absolute; top: 0; left: 100%; background: #0b141a; transition: 0.3s; z-index: 50; }
+        #chat-screen.open { left: 0; }
+        .msg-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 6px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-alpha: 0.08; }
+        .bubble { padding: 8px 12px; border-radius: 10px; max-width: 85%; font-size: 14px; position: relative; line-height: 1.4; box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .bubble.me { background: #005c4b; align-self: flex-end; border-top-right-radius: 2px; }
+        .bubble.he { background: #202c33; align-self: flex-start; border-top-left-radius: 2px; }
+        .time { font-size: 10px; color: rgba(255,255,255,0.5); float: right; margin: 4px -4px -4px 8px; }
 
-        /* ВВОД */
-        .input-area { background: #202c33; padding: 10px; display: flex; align-items: center; gap: 10px; }
-        .input-area input { flex: 1; background: #2a3942; border: none; padding: 12px 15px; border-radius: 20px; color: white; outline: none; }
-        .icon-btn { color: #8696a0; font-size: 20px; cursor: pointer; }
-
-        /* AUTH */
-        .auth-screen { padding: 50px 30px; text-align: center; }
-        .auth-input { width: 100%; background: #2a3942; border: 1px solid #3b4a54; padding: 15px; border-radius: 10px; color: white; margin-bottom: 10px; }
-        .auth-btn { width: 100%; padding: 15px; background: #00a2ff; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; }
+        .input-bar { background: #202c33; padding: 10px; display: flex; align-items: center; gap: 10px; }
+        .input-bar input { margin: 0; border-radius: 25px; padding: 10px 18px; }
+        .send-btn { background: none; border: none; color: #00a2ff; font-size: 22px; cursor: pointer; display: flex; align-items: center; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="scr-auth" class="screen" style="display: flex;">
-        <div class="auth-screen">
-            <h1 style="color:#00a2ff; margin-bottom:30px;">MilkyWay</h1>
-            <input type="email" id="email" class="auth-input" placeholder="Email">
-            <input type="password" id="pass" class="auth-input" placeholder="Пароль">
-            <button class="auth-btn" onclick="authAction(true)">ВОЙТИ</button>
-            <p style="margin-top:20px; font-size:12px; color:#8696a0; cursor:pointer;" onclick="authAction(false)">Создать новый аккаунт</p>
-        </div>
+<div class="app">
+    <div id="scr-auth" class="screen auth-screen active">
+        <div class="logo">MilkyWay</div>
+        <input type="email" id="email" placeholder="Email (например: alex@mail.com)">
+        <input type="password" id="pass" placeholder="Пароль">
+        <button class="btn-blue" onclick="handleAuth(true)">ВОЙТИ</button>
+        <button onclick="handleAuth(false)" style="background:none; border:none; color:#8696a0; margin-top:15px; font-size:13px;">Создать новый аккаунт</button>
     </div>
 
-    <div id="scr-main" class="screen" style="display: none;">
+    <div id="scr-main" class="screen">
         <div class="header">
-            <h2>WhatsApp Elite</h2>
-            <i class="fas fa-sign-out-alt icon-btn" onclick="auth.signOut()"></i>
+            <div class="avatar">👤</div>
+            <h2>Чаты</h2>
+            <i class="fas fa-sign-out-alt" style="color:#8696a0; cursor:pointer;" onclick="auth.signOut()"></i>
         </div>
         <div class="contact-list" id="contact-list"></div>
     </div>
 
-    <div id="chat-screen">
+    <div id="chat-screen" class="screen">
         <div class="header">
-            <i class="fas fa-arrow-left icon-btn" onclick="closeChat()"></i>
-            <div class="avatar" style="width:35px; height:35px; font-size:14px;">👤</div>
-            <div style="flex:1">
-                <div id="chat-name" style="font-weight:bold; font-size:15px;"></div>
-                <div id="chat-status" style="font-size:11px; color:#8696a0;">в сети</div>
-            </div>
+            <i class="fas fa-arrow-left" style="cursor:pointer;" onclick="closeChat()"></i>
+            <div class="avatar" style="width:34px; height:34px; font-size:14px;">👤</div>
+            <h2 id="target-name">Загрузка...</h2>
         </div>
-        <div class="messages" id="message-container"></div>
-        <div class="input-area">
-            <i class="far fa-smile icon-btn"></i>
-            <input type="text" id="msg-input" placeholder="Введите сообщение" onkeypress="if(event.key==='Enter') sendMsg()">
-            <i class="fas fa-microphone icon-btn" id="mic-btn"></i>
-            <i class="fas fa-paper-plane icon-btn" style="color:#00a2ff; display:none;" id="send-btn" onclick="sendMsg()"></i>
+        <div class="msg-area" id="msg-area"></div>
+        <div class="input-bar">
+            <input type="text" id="m-input" placeholder="Введите сообщение" onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="send-btn" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -101,50 +96,48 @@
     };
     firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    let curChat = null;
+    let currentOpponentId = null;
 
-    // Авторизация
-    async function authAction(login) {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+    async function handleAuth(isLogin) {
+        const mail = document.getElementById('email').value, pw = document.getElementById('pass').value;
+        if(pw.length < 6) return alert("Пароль должен быть от 6 символов");
         try {
-            if(login) await auth.signInWithEmailAndPassword(e, p);
+            if(isLogin) await auth.signInWithEmailAndPassword(mail, pw);
             else {
-                const r = await auth.createUserWithEmailAndPassword(e, p);
-                await db.ref('users/' + r.user.uid).set({ name: e.split('@')[0], status: 'online' });
+                const res = await auth.createUserWithEmailAndPassword(mail, pw);
+                await db.ref('users/' + res.user.uid).set({ 
+                    name: mail.split('@')[0], 
+                    status: 'online', 
+                    lastSeen: Date.now() 
+                });
             }
-        } catch(err) { alert(err.message); }
+        } catch(e) { alert("Ошибка: " + e.message); }
     }
 
-    // Следим за состоянием входа
-    auth.onAuthStateChanged(u => {
-        document.getElementById('scr-auth').style.display = u ? 'none' : 'block';
-        document.getElementById('scr-main').style.display = u ? 'flex' : 'none';
-        if(u) {
-            db.ref('users/' + u.uid + '/status').set('online');
-            db.ref('users/' + u.uid + '/status').onDisconnect().set('offline');
-            loadContacts();
+    auth.onAuthStateChanged(user => {
+        document.getElementById('scr-auth').classList.toggle('active', !user);
+        document.getElementById('scr-main').classList.toggle('active', !!user);
+        if(user) {
+            db.ref('users/' + user.uid + '/status').set('online');
+            db.ref('users/' + user.uid + '/status').onDisconnect().set('offline');
+            loadList();
         }
     });
 
-    // Список контактов с WhatsApp-фишками
-    function loadContacts() {
+    function loadList() {
         db.ref('users').on('value', snap => {
-            const list = document.getElementById('contact-list');
-            list.innerHTML = '';
+            const container = document.getElementById('contact-list');
+            container.innerHTML = '';
             snap.forEach(u => {
                 if(u.key !== auth.currentUser.uid) {
-                    const isOnline = u.val().status === 'online';
-                    list.innerHTML += `
-                        <div class="contact-item" onclick="openChat('${u.key}','${u.val().name}')">
-                            <div class="avatar">👤 <div class="online-indicator" style="display:${isOnline?'block':'none'}"></div></div>
-                            <div style="flex:1">
-                                <div style="display:flex; justify-content:space-between">
-                                    <span style="font-weight:bold">${u.val().name}</span>
-                                    <span style="font-size:11px; color:#8696a0">12:00</span>
-                                </div>
-                                <div style="font-size:13px; color:#8696a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:200px;">
-                                    Нажмите, чтобы начать чат...
-                                </div>
+                    const data = u.val();
+                    const isOnline = data.status === 'online';
+                    container.innerHTML += `
+                        <div class="item" onclick="openChat('${u.key}','${data.name}')">
+                            <div class="avatar">👤 <div class="online-dot" style="display:${isOnline?'block':'none'}"></div></div>
+                            <div class="item-info">
+                                <div class="item-name">${data.name || 'Пользователь'}</div>
+                                <div class="item-msg">Нажмите, чтобы начать общение</div>
                             </div>
                         </div>`;
                 }
@@ -152,45 +145,41 @@
         });
     }
 
-    // Открытие чата
     function openChat(id, name) {
-        curChat = id;
-        document.getElementById('chat-name').innerText = name;
-        document.getElementById('chat-screen').classList.add('active');
-        const cID = [auth.currentUser.uid, id].sort().join('_');
+        currentOpponentId = id;
+        document.getElementById('target-name').innerText = name;
+        document.getElementById('chat-screen').classList.add('open', 'active');
+        const chatId = [auth.currentUser.uid, id].sort().join('_');
         
-        db.ref('chats/' + cID).on('value', s => {
-            const box = document.getElementById('message-container');
-            box.innerHTML = '';
-            s.forEach(m => {
-                const d = m.val(), isMe = d.from === auth.currentUser.uid;
-                const time = new Date(d.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
-                box.innerHTML += `
-                    <div class="m ${isMe?'me':'he'}">
-                        ${d.txt}
-                        <div class="m-time">${time} ${isMe?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</div>
+        db.ref('chats/' + chatId).on('value', snap => {
+            const area = document.getElementById('msg-area');
+            area.innerHTML = '';
+            snap.forEach(m => {
+                const msg = m.val();
+                const isMe = msg.from === auth.currentUser.uid;
+                const time = new Date(msg.ts).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                area.innerHTML += `
+                    <div class="bubble ${isMe?'me':'he'}">
+                        ${msg.txt}
+                        <span class="time">${time} ${isMe?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</span>
                     </div>`;
             });
-            box.scrollTop = box.scrollHeight;
+            area.scrollTop = area.scrollHeight;
         });
     }
 
-    function closeChat() { document.getElementById('chat-screen').classList.remove('active'); }
+    function closeChat() { document.getElementById('chat-screen').classList.remove('open'); }
 
-    // Логика кнопки "Отправить" / "Микрофон"
-    document.getElementById('msg-input').oninput = function() {
-        const hasTxt = this.value.length > 0;
-        document.getElementById('send-btn').style.display = hasTxt ? 'block' : 'none';
-        document.getElementById('mic-btn').style.display = hasTxt ? 'none' : 'block';
-    };
-
-    function sendMsg() {
-        const t = document.getElementById('msg-input').value; if(!t) return;
-        const cID = [auth.currentUser.uid, curChat].sort().join('_');
-        db.ref('chats/' + cID).push({ from: auth.currentUser.uid, txt: t, ts: Date.now() });
-        document.getElementById('msg-input').value = '';
-        document.getElementById('send-btn').style.display = 'none';
-        document.getElementById('mic-btn').style.display = 'block';
+    function sendMessage() {
+        const input = document.getElementById('m-input');
+        if(!input.value.trim() || !currentOpponentId) return;
+        const chatId = [auth.currentUser.uid, currentOpponentId].sort().join('_');
+        db.ref('chats/' + chatId).push({
+            from: auth.currentUser.uid,
+            txt: input.value,
+            ts: Date.now()
+        });
+        input.value = '';
     }
 </script>
 </body>
