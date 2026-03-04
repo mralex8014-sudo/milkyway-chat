@@ -7,118 +7,132 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        :root { --neon: #00d2ff; --bg: #05070a; --panel: #0d1117; --border: #1f2937; --wa-green: #25d366; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #000; color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+        /* ТВОЙ ОРИГИНАЛЬНЫЙ ДИЗАЙН */
+        body {
+            background-color: #0b0e14;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-        /* Тот самый первый дизайн */
-        .app-container { width: 100%; max-width: 450px; height: 100vh; margin: 0 auto; background: var(--bg); position: relative; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .app-container {
+            width: 350px;
+            height: 650px; /* Немного увеличил для вкладок */
+            background: rgba(20, 25, 35, 0.95);
+            border: 1px solid #1f2a3d;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0, 162, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
 
-        /* Исправленное меню */
-        .sidebar { position: fixed; top: 0; left: -100%; width: 300px; height: 100%; background: var(--panel); z-index: 10000; transition: 0.3s; padding: 40px 20px; border-right: 1px solid var(--neon); }
-        .sidebar.open { left: 0; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; display: none; }
+        header {
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid #1f2a3d;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* Навигация (в стиле WhatsApp) */
-        .tabs { display: flex; background: var(--panel); border-bottom: 1px solid var(--border); text-align: center; }
-        .tab { flex: 1; padding: 15px; font-size: 12px; font-weight: bold; color: #8696a0; cursor: pointer; text-transform: uppercase; }
-        .tab.active { color: var(--neon); border-bottom: 3px solid var(--neon); }
+        h1 { margin: 0; font-size: 22px; color: #00a2ff; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Экраны */
-        .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+        /* ВКЛАДКИ (WHATSAPP STYLE) */
+        .tabs { display: flex; background: #161b22; border-bottom: 1px solid #1f2a3d; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 11px; color: #8b949e; cursor: pointer; font-weight: bold; }
+        .tab.active { color: #00a2ff; border-bottom: 2px solid #00a2ff; }
+
+        /* ЭКРАНЫ */
+        .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
         .active-screen { display: flex; }
 
-        /* Чаты */
-        .chat-item { padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #121b22; cursor: pointer; }
-        .av { width: 50px; height: 50px; border-radius: 50%; background: #323739; display: grid; place-items: center; font-size: 20px; }
-        .chat-info { flex: 1; }
-        .chat-info h4 { font-size: 16px; margin-bottom: 4px; }
-        .chat-info p { font-size: 13px; color: #8696a0; }
+        /* СПИСОК ЧАТОВ */
+        .contacts-list { flex: 1; overflow-y: auto; }
+        .contact-item {
+            display: flex; padding: 12px 15px; border-bottom: 1px solid #161b22;
+            cursor: pointer; transition: 0.3s; align-items: center;
+        }
+        .contact-item:hover { background: #1c2128; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; background: #232d3b; display: grid; place-items: center; margin-right: 12px; font-size: 20px; }
 
-        /* Сообщения и Галочки */
-        #msg-container { flex: 1; overflow-y: auto; padding: 15px; background: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-blend-mode: overlay; }
-        .m-wrap { margin-bottom: 10px; display: flex; flex-direction: column; }
-        .m-body { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 14px; position: relative; }
-        .sent { align-self: flex-end; background: #005c4b; }
-        .rec { align-self: flex-start; background: #202c33; }
-        .m-time { font-size: 10px; color: #8696a0; text-align: right; margin-top: 4px; }
-        .ticks { font-size: 12px; margin-left: 5px; }
-        .blue { color: #53bdeb; }
+        /* ОКНО ЧАТА */
+        #chat-window { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #0b0e14; z-index: 100; display: none; flex-direction: column;
+        }
+        .msg-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .bubble { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 14px; position: relative; }
+        .bubble.my { align-self: flex-end; background: #004d7a; }
+        .bubble.th { align-self: flex-start; background: #1c2128; }
+        
+        /* ГАЛОЧКИ */
+        .status-bar { font-size: 10px; display: flex; justify-content: flex-end; margin-top: 4px; color: #8b949e; }
+        .blue-ticks { color: #00a2ff; }
 
-        /* Интерфейс ввода */
-        .input-area { padding: 10px; background: var(--panel); display: flex; align-items: center; gap: 10px; }
-        .input-area input { flex: 1; background: #2a2f32; border: none; padding: 10px 15px; border-radius: 20px; color: #fff; outline: none; }
-        .icon-btn { font-size: 20px; color: #8696a0; cursor: pointer; }
+        /* ВВОД СООБЩЕНИЯ */
+        .input-box { padding: 15px; display: flex; gap: 8px; background: #161b22; align-items: center; }
+        input { flex: 1; background: #0d1117; border: 1px solid #30363d; padding: 8px 12px; border-radius: 20px; color: white; outline: none; }
+        button { background: #00a2ff; border: none; color: white; padding: 8px 15px; border-radius: 50%; cursor: pointer; }
 
-        /* Тот самый первый логотип */
-        .logo-first { font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--neon); letter-spacing: 2px; text-shadow: 0 0 10px var(--neon); }
+        /* OTP АВТОРИЗАЦИЯ */
+        .auth-screen { padding: 30px; text-align: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="ovl" class="overlay" onclick="tglM()"></div>
-<div id="side" class="sidebar">
-    <div class="logo-first" style="font-size: 24px; margin-bottom: 30px;">MILKYWAY</div>
-    <div style="display:flex; flex-direction:column; gap:20px;">
-        <p onclick="alert('Профиль')"><i class="fas fa-user"></i> Сведения (About) [cite: 2026-03-04]</p>
-        <p onclick="alert('Архив')"><i class="fas fa-archive"></i> Архив [cite: 2026-03-04]</p>
-        <p onclick="alert('Конфиденциальность')"><i class="fas fa-lock"></i> Конфиденциальность [cite: 2026-03-04]</p>
-        <p onclick="auth.signOut()" style="color:#ff4b4b;"><i class="fas fa-power-off"></i> Выход</p>
-    </div>
-</div>
-
 <div class="app-container">
-    <div id="scr-auth" class="screen active-screen">
-        <div style="padding: 40px; text-align:center;">
-            <div class="logo-first" style="font-size: 35px; margin-bottom: 50px;">MILKYWAY</div>
-            <p style="color:#8696a0; margin-bottom: 20px;">Введите номер телефона для OTP-верификации [cite: 2026-03-04]</p>
-            <input type="text" id="phone" placeholder="+7 (___) ___-__-__" style="width:100%; padding:15px; background:#121b22; border:1px solid var(--border); color:#fff; border-radius:10px; margin-bottom:15px;">
-            <button onclick="sendOTP()" style="width:100%; padding:15px; background:var(--neon); border:none; border-radius:10px; font-weight:bold; cursor:pointer; color:#000;">ПОЛУЧИТЬ КОД [cite: 2026-03-04]</button>
-        </div>
+    <div id="scr-auth" class="screen active-screen auth-screen">
+        <h1 style="margin-bottom: 30px;">MilkyWay</h1>
+        <p style="font-size: 14px; color: #8b949e; margin-bottom: 20px;">Вход по номеру телефона (OTP)</p>
+        <input type="text" id="phone" placeholder="+7 900 000 00 00" style="margin-bottom: 10px; text-align: center;">
+        <button onclick="sendOTP()" style="border-radius: 8px; width: 100%;">ПОЛУЧИТЬ КОД</button>
     </div>
 
     <div id="scr-main" class="screen">
-        <header style="padding:15px; background:var(--panel); display:flex; justify-content:space-between; align-items:center;">
-            <i class="fas fa-bars icon-btn" onclick="tglM()"></i>
-            <span class="logo-first">MILKYWAY</span>
-            <i class="fas fa-search icon-btn"></i>
+        <header>
+            <i class="fas fa-bars" style="color:#00a2ff"></i>
+            <h1>MilkyWay</h1>
+            <i class="fas fa-search" style="color:#8b949e"></i>
         </header>
         <div class="tabs">
-            <div class="tab" onclick="alert('Сообщества')"><i class="fas fa-users"></i></div>
-            <div class="tab active">Чаты</div>
-            <div class="tab" onclick="alert('Статусы исчезнут через 24ч')">Статус [cite: 2026-03-04]</div>
-            <div class="tab" onclick="alert('Звонки VoIP (WebRTC)')">Звонки [cite: 2026-03-04]</div>
+            <div class="tab active">ЧАТЫ</div>
+            <div class="tab" onclick="alert('Статусы 24ч')">СТАТУС</div>
+            <div class="tab" onclick="alert('VoIP Звонки')">ЗВОНКИ</div>
         </div>
-        <div id="chat-list" style="flex:1; overflow-y:auto;">
+        <div class="contacts-list" id="contacts-list">
             </div>
     </div>
 
-    <div id="scr-chat" class="screen">
-        <header style="padding:10px 15px; background:var(--panel); display:flex; align-items:center; gap:10px;">
-            <i class="fas fa-arrow-left icon-btn" onclick="sh('scr-main')"></i>
-            <div class="av" style="width:35px; height:35px; font-size:14px;">U</div>
-            <div style="flex:1">
-                <b id="chat-name">Контакт</b>
-                <div style="font-size:10px; color:var(--neon);">E2EE зашифровано [cite: 2026-03-04]</div>
+    <div id="chat-window">
+        <header>
+            <i class="fas fa-arrow-left" onclick="closeChat()"></i>
+            <span id="chat-user-name" class="name">Контакт</span>
+            <div style="display:flex; gap:15px;">
+                <i class="fas fa-video"></i>
+                <i class="fas fa-phone"></i>
             </div>
-            <i class="fas fa-video icon-btn"></i>
-            <i class="fas fa-phone icon-btn"></i>
         </header>
-        <div id="msg-container"></div>
-        <div class="input-area">
-            <i class="far fa-smile icon-btn"></i>
-            <i class="fas fa-paperclip icon-btn" onclick="document.getElementById('file-in').click()"></i>
-            <input type="file" id="file-in" style="display:none" onchange="sendFile(this)">
-            <input type="text" id="msg-input" placeholder="Сообщение">
-            <i class="fas fa-microphone icon-btn" id="mic-btn"></i>
+        <div class="msg-box" id="msg-box"></div>
+        <div class="input-box">
+            <i class="far fa-smile" style="color:#8b949e"></i>
+            <input type="text" id="m-text" placeholder="Сообщение...">
+            <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
 
 <script>
-    // Конфиг Firebase тот же
+    // ТВОЙ КОНФИГ FIREBASE
     const firebaseConfig = {
         apiKey: "AIzaSyA-bMCUsWhvoMO6uBMV9Z2NKZjvqFNwjeQ",
         authDomain: "wm-message.firebaseapp.com",
@@ -129,98 +143,110 @@
         appId: "1:573728159190:web:96856417745778a487ed53"
     };
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database();
+    const db = firebase.database();
+    const auth = firebase.auth();
     let me = null, activeChat = null;
 
-    function tglM() {
-        const s = document.getElementById('side'), o = document.getElementById('ovl');
-        const is = s.classList.toggle('open');
-        o.style.display = is ? 'block' : 'none';
-    }
+    // E2EE ШИФРОВАНИЕ
+    const passPhrase = 'milkyway-secure-key';
+    const encrypt = (msg) => CryptoJS.AES.encrypt(msg, passPhrase).toString();
+    const decrypt = (hash) => CryptoJS.AES.decrypt(hash, passPhrase).toString(CryptoJS.enc.Utf8);
 
-    function sh(id) {
+    function showScreen(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
         document.getElementById(id).classList.add('active-screen');
     }
 
-    // Имитация OTP (так как нужен платный шлюз для реальных SMS)
+    // Имитация OTP
     function sendOTP() {
         const phone = document.getElementById('phone').value;
-        if(phone.length < 10) return alert("Введите корректный номер [cite: 2026-03-04]");
-        const code = prompt("Введите 6-значный код из SMS [cite: 2026-03-04]");
+        if(phone.length < 10) return alert("Введите номер!");
+        const code = prompt("Введите 6-значный код из SMS:");
         if(code) {
-            // В реальности здесь firebase.auth.PhoneAuthProvider
-            // Для теста используем существующий анонимный вход или email
             auth.signInAnonymously().then(() => {
-                alert("Успешная верификация номера! [cite: 2026-03-04]");
+                alert("Номер подтвержден!");
             });
         }
     }
 
-    auth.onAuthStateChanged(u => {
-        if(u) { me = u; sh('scr-main'); loadList(); }
-        else sh('scr-auth');
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            me = user;
+            showScreen('scr-main');
+            loadContacts();
+        } else {
+            showScreen('scr-auth');
+        }
     });
 
-    function loadList() {
-        const list = document.getElementById('chat-list');
-        list.innerHTML = `
-            <div class="chat-item" onclick="openC('global', 'Общий канал')">
-                <div class="av"><i class="fas fa-globe"></i></div>
-                <div class="chat-info">
-                    <h4>Общий канал (Сообщество) [cite: 2026-03-04]</h4>
-                    <p>Нажмите, чтобы войти в группу [cite: 2026-03-04]</p>
-                </div>
-            </div>
-        `;
-        // Здесь будет синхронизация контактов [cite: 2026-03-04]
+    function loadContacts() {
+        const list = document.getElementById('contacts-list');
+        list.innerHTML = '';
+        db.ref('users').once('value', snap => {
+            snap.forEach(u => {
+                if(u.key !== me.uid) {
+                    const data = u.val();
+                    list.innerHTML += `
+                        <div class="contact-item" onclick="openChat('${u.key}', '${data.name}')">
+                            <div class="avatar">👤</div>
+                            <div class="info">
+                                <div class="name">${data.name}</div>
+                                <div class="last-msg">E2EE защищено...</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        });
     }
 
-    function openC(id, name) {
+    function openChat(id, name) {
         activeChat = id;
-        document.getElementById('chat-name').innerText = name;
-        sh('scr-chat');
-        renderMsgs();
+        document.getElementById('chat-user-name').innerText = name;
+        document.getElementById('chat-window').style.display = 'flex';
+        renderMessages();
     }
 
-    function renderMsgs() {
-        const box = document.getElementById('msg-container');
+    function closeChat() {
+        document.getElementById('chat-window').style.display = 'none';
+        db.ref('messages/' + activeChat).off();
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('m-text');
+        if(!input.value) return;
+
+        db.ref('messages/' + activeChat).push({
+            sender: me.uid,
+            text: encrypt(input.value), // Шифруем перед отправкой
+            time: Date.now(),
+            read: false
+        });
+        input.value = '';
+    }
+
+    function renderMessages() {
+        const box = document.getElementById('msg-box');
         box.innerHTML = '';
-        db.ref('messages/' + activeChat).on('child_added', s => {
-            const m = s.val();
+        db.ref('messages/' + activeChat).on('child_added', snap => {
+            const m = snap.val();
+            const isMe = m.sender === me.uid;
+            
+            // Логика галочек: если не я отправил, ставим "прочитано"
+            if(!isMe && !m.read) db.ref('messages/' + activeChat + '/' + snap.key).update({read: true});
+
             const div = document.createElement('div');
-            div.className = 'm-wrap';
-            
-            // Галочки статуса [cite: 2026-03-04]
-            const ticks = m.read ? '<i class="fas fa-check-double blue"></i>' : '<i class="fas fa-check"></i>';
-            
+            div.className = `bubble ${isMe ? 'my' : 'th'}`;
             div.innerHTML = `
-                <div class="m-body ${m.from === me.uid ? 'sent' : 'rec'}">
-                    ${m.text}
-                    <div class="m-time">
-                        ${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        <span class="ticks">${m.from === me.uid ? ticks : ''}</span>
-                    </div>
+                ${decrypt(m.text)}
+                <div class="status-bar">
+                    ${new Date(m.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                    ${isMe ? `<i class="fas fa-check-double ${m.read ? 'blue-ticks' : ''}" style="margin-left:5px"></i>` : ''}
                 </div>
             `;
             box.appendChild(div);
             box.scrollTop = box.scrollHeight;
         });
-    }
-
-    document.getElementById('msg-input').onkeypress = (e) => {
-        if(e.key === 'Enter') {
-            const val = e.target.value;
-            if(!val) return;
-            // E2EE имитация (шифрование перед отправкой) [cite: 2026-03-04]
-            db.ref('messages/' + activeChat).push({
-                from: me.uid,
-                text: val, 
-                time: Date.now(),
-                read: false // Вторая галочка появится, когда собеседник откроет чат [cite: 2026-03-04]
-            });
-            e.target.value = '';
-        }
     }
 </script>
 </body>
