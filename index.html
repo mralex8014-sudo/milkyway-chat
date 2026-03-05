@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MilkyWay: Ultimate Core</title>
+    <title>MilkyWay: Galactic Commander</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -14,6 +14,7 @@
             --accent: #00d2ff;
             --nebula: #6c5ce7;
             --ai-glow: #00ff88;
+            --danger: #ff4757;
             --glass: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.15);
         }
@@ -27,124 +28,109 @@
             border-left: 1px solid var(--border); border-right: 1px solid var(--border);
         }
 
-        .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
-        .comet { width: 35px; height: 35px; background: linear-gradient(45deg, var(--accent), var(--nebula)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px var(--accent); animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 25px var(--nebula); } }
-
+        /* --- SCREENS --- */
         .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; background: inherit; z-index: 10; }
         .active { display: flex; }
+        .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
 
-        .scroller { flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
-        .item:active { background: var(--glass); }
-
-        /* --- CHAT --- */
+        /* --- CHAT ELEMENTS --- */
         #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
         #scr-chat.open { transform: translateX(0); }
         .chat-wallpaper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
         
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 15px; line-height: 1.4; position: relative; animation: slideIn 0.2s ease; word-wrap: break-word; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .m-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .m-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-        .ai-typing { font-size: 12px; color: var(--ai-glow); align-self: flex-start; margin-left: 15px; display: none; font-style: italic; }
+        .bubble { padding: 8px 12px; border-radius: 15px; max-width: 80%; font-size: 14px; position: relative; animation: slideIn 0.2s ease; word-wrap: break-word; }
+        .m-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .m-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid var(--border); }
+        
+        .m-meta { font-size: 9px; margin-top: 4px; display: flex; justify-content: flex-end; gap: 4px; opacity: 0.7; }
+        .file-msg { display: flex; align-items: center; gap: 10px; color: var(--accent); text-decoration: none; cursor: pointer; }
 
         /* --- NAV --- */
-        .nav { height: 75px; background: #080a0f; border-top: 1px solid var(--border); display: flex; position: absolute; bottom: 0; width: 100%; z-index: 100; }
-        .nav-t { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8696a0; gap: 5px; cursor: pointer; font-size: 11px; }
+        .nav { height: 70px; background: #080a0f; border-top: 1px solid var(--border); display: flex; position: absolute; bottom: 0; width: 100%; z-index: 100; }
+        .nav-t { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8696a0; gap: 4px; cursor: pointer; font-size: 10px; }
         .nav-t.active { color: var(--accent); }
 
-        .cosmo-input { width: 100%; padding: 12px 15px; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; color: #fff; outline: none; }
+        /* --- UI HELPERS --- */
+        .cosmo-input { width: 100%; padding: 12px 15px; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; color: #fff; outline: none; margin-bottom: 10px; }
         .ava { width: 45px; height: 45px; border-radius: 50%; border: 1px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #111; flex-shrink: 0; }
         .ava img { width: 100%; height: 100%; object-fit: cover; }
-        .rocket-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: #000; cursor: pointer; }
+        .btn-prime { width: 100%; padding: 15px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; cursor: pointer; color: #000; }
+        .scroller { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+        .item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div id="scr-auth" class="screen active" style="justify-content:center; padding:40px;">
-        <center><div class="comet"><i class="fas fa-meteor"></i></div><h2 style="margin:20px 0;">MILKYWAY</h2></center>
-        <div id="auth-err" style="color:var(--danger); font-size:12px; margin-bottom:10px; text-align:center;"></div>
-        <input type="email" id="email" class="cosmo-input" placeholder="Космо-почта" style="margin-bottom:10px;">
-        <input type="password" id="pass" class="cosmo-input" placeholder="Пароль (мин 6 симв.)" style="margin-bottom:15px;">
-        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:10px; font-weight:bold;">ЗАПУСК</button>
+        <center><h2 style="color:var(--accent); margin-bottom:30px;"><i class="fas fa-meteor"></i> MILKYWAY</h2></center>
+        
+        <div id="auth-box">
+            <input type="email" id="auth-email" class="cosmo-input" placeholder="Введите почту">
+            <button onclick="handleAuthStep1()" class="btn-prime">ОТПРАВИТЬ КОД ПОДТВЕРЖДЕНИЯ</button>
+            <p style="font-size: 12px; color:#8696a0; margin-top:15px; text-align:center;">Если вы уже подтвердили почту, введите пароль ниже после проверки ссылки в письме.</p>
+        </div>
+
+        <div id="password-box" style="display:none; margin-top:20px;">
+            <input type="password" id="auth-pass" class="cosmo-input" placeholder="Установите/Введите пароль">
+            <button onclick="handleAuthStep2()" class="btn-prime">ВОЙТИ В СИСТЕМУ</button>
+        </div>
+        <div id="auth-msg" style="color:var(--ai-glow); font-size:12px; margin-top:15px; text-align:center;"></div>
     </div>
 
     <div id="scr-main" class="screen">
         <div class="header">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div class="comet"><i class="fas fa-meteor"></i></div>
-                    <b style="color:var(--accent); letter-spacing: 1px;">MILKYWAY</b>
-                </div>
-                <div style="display:flex; gap:15px; align-items:center;">
-                    <i class="fas fa-robot" onclick="openChat('gemini_ai', 'Gemini AI')" style="color:var(--ai-glow); cursor:pointer; font-size:20px;"></i>
-                    <i class="fas fa-cog" onclick="showSettings()" style="color:#8696a0; cursor:pointer; font-size:20px;"></i>
-                </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <b style="color:var(--accent)">MILKYWAY PRO</b>
+                <i class="fas fa-cog" onclick="showSettings()" style="color:#8696a0; cursor:pointer;"></i>
             </div>
-            <div style="background:var(--glass); border-radius:10px; padding:8px 15px; display:flex; align-items:center;">
-                <i class="fas fa-search" style="color:#8696a0; margin-right:10px;"></i>
-                <input type="text" id="gSearch" placeholder="Поиск (Имя, Ник, Почта, Тел)..." oninput="handleSearch()" style="background:none; border:none; color:#fff; flex:1; outline:none;">
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <input type="text" id="mainSearch" class="cosmo-input" style="margin:0; flex:1;" placeholder="Поиск по ID или Email...">
+                <button onclick="globalSearch()" style="background:var(--accent); border:none; padding:0 15px; border-radius:10px;"><i class="fas fa-search"></i></button>
             </div>
         </div>
 
         <div id="view-chats" class="scroller"></div>
         <div id="view-contacts" class="scroller" style="display:none;"></div>
-        <div id="view-calls" class="scroller" style="display:none; text-align:center; padding:100px;">
-            <i class="fas fa-phone-slash" style="font-size:40px; color:#8696a0;"></i>
-            <p style="color:#8696a0; margin-top:15px;">История звонков пуста</p>
-        </div>
-        <div id="view-status" class="scroller" style="display:none; text-align:center; padding:100px;">
-            <i class="fas fa-satellite-dish" style="font-size:40px; color:var(--accent); animation: pulse 2s infinite;"></i>
-            <p style="color:#8696a0; margin-top:15px;">Сканирование радаров...</p>
-        </div>
 
         <nav class="nav">
             <div class="nav-t active" onclick="tab('chats', this)"><i class="fas fa-comment"></i><span>Чаты</span></div>
-            <div class="nav-t" onclick="tab('contacts', this)"><i class="fas fa-address-book"></i><span>Контакты</span></div>
+            <div class="nav-t" onclick="tab('contacts', this)"><i class="fas fa-user-friends"></i><span>Контакты</span></div>
             <div class="nav-t" onclick="tab('calls', this)"><i class="fas fa-phone"></i><span>Звонки</span></div>
-            <div class="nav-t" onclick="tab('status', this)"><i class="fas fa-star"></i><span>Статус</span></div>
         </nav>
-    </div>
-
-    <div id="scr-settings" class="screen" style="z-index:1100; background:#05070c;">
-        <div class="header"><i class="fas fa-arrow-left" onclick="hideSettings()" style="cursor:pointer; color:var(--accent); font-size:18px;"></i> <b style="margin-left:10px;">ПРОФИЛЬ</b></div>
-        <div class="scroller" style="padding:25px; text-align:center;">
-            <div class="ava" style="width:100px; height:100px; margin:0 auto 15px; border: 2px solid var(--accent); cursor:pointer;" onclick="document.getElementById('file-in').click()">
-                <img id="p-img" style="display:none; border-radius:50%;">
-                <i class="fas fa-camera" id="p-icon" style="font-size:30px;"></i>
-            </div>
-            <input type="file" id="file-in" style="display:none;" onchange="uploadAva(this)">
-            <input type="text" id="set-name" class="cosmo-input" placeholder="Имя Фамилия" style="margin-bottom:10px;">
-            <input type="text" id="set-nick" class="cosmo-input" placeholder="Никнейм (@id)" style="margin-bottom:10px;">
-            <input type="tel" id="set-phone" class="cosmo-input" placeholder="Телефон (+7...)" style="margin-bottom:10px;">
-            <button onclick="saveProfile()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:10px; color:#000; font-weight:bold;">СОХРАНИТЬ ДАННЫЕ</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; color:var(--danger); background:none; border:none; width:100%; padding:10px;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
-        </div>
     </div>
 
     <div id="scr-chat" class="screen">
         <div class="header" style="display:flex; align-items:center; gap:12px;">
-            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); cursor:pointer; font-size:20px; padding:5px;"></i>
-            <div id="c-ava" class="ava" style="width:38px; height:38px;"></div>
-            <div style="flex:1"><b id="c-name"></b><br><small id="c-info" style="font-size:10px; color:#8696a0;"></small></div>
-            <div style="display:flex; gap:15px; color:var(--accent); font-size:18px;">
-                <i class="fas fa-phone"></i><i class="fas fa-video"></i>
-            </div>
+            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); cursor:pointer;"></i>
+            <div id="chat-ava" class="ava" style="width:35px; height:35px;"></div>
+            <b id="chat-title" style="flex:1">Чат</b>
+            <i class="fas fa-phone" style="color:var(--accent)"></i>
         </div>
         <div id="chat-box" class="chat-wallpaper"></div>
-        <div id="ai-status" class="ai-typing">Gemini анализирует сигнал...</div>
         <div style="padding:15px; background:#0a0f19; display:flex; gap:10px; align-items:center;">
-            <i class="fas fa-paperclip" style="color:#8696a0; font-size:20px;"></i>
-            <input type="text" id="msg-input" class="cosmo-input" placeholder="Сообщение..." style="margin:0; flex:1; border-radius:25px;">
-            <button class="rocket-btn" onclick="send()"><i class="fas fa-paper-plane"></i></button>
+            <label for="file-send" style="cursor:pointer; color:#8696a0;"><i class="fas fa-paperclip"></i></label>
+            <input type="file" id="file-send" style="display:none;" onchange="sendFile(this)">
+            <input type="text" id="msg-input" class="cosmo-input" style="margin:0; flex:1; border-radius:20px;" placeholder="Сообщение...">
+            <button class="ava" style="background:var(--accent); border:none; color:#000;" onclick="sendText()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="scr-settings" class="screen" style="z-index:1100; background:#05070c;">
+        <div class="header"><i class="fas fa-arrow-left" onclick="hideSettings()"></i> <b>НАСТРОЙКИ</b></div>
+        <div class="scroller" style="padding:25px; text-align:center;">
+            <p id="my-id-display" style="font-size:10px; color:var(--accent); margin-bottom:20px;"></p>
+            <input type="text" id="set-name" class="cosmo-input" placeholder="Ваше имя">
+            <button onclick="saveProfile()" class="btn-prime">СОХРАНИТЬ</button>
+            <button onclick="auth.signOut()" style="margin-top:30px; color:red; background:none; border:none;">ВЫХОД</button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // --- CONFIG ---
     const config = {
         apiKey: "AIzaSyA-bMCUsWhvoMO6uBMV9Z2NKZjvqFNwjeQ",
         authDomain: "wm-message.firebaseapp.com",
@@ -156,151 +142,135 @@
     };
     firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    
-    // ВСТАВЬ СЮДА СВОЙ КЛЮЧ GEMINI API ДЛЯ НАСТОЯЩЕГО ИИ
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"; 
 
-    let myId = null, selId = null, activeTab = 'chats', msgListen = null;
+    let myId = null, selId = null, activeTab = 'chats', chatListener = null;
 
-    // --- AUTH ---
-    async function authRun() {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        const err = document.getElementById('auth-err'); err.innerText = "";
-        if(!e || p.length < 6) { err.innerText = "Ошибка: неверная почта или короткий пароль."; return; }
-        try { 
-            await auth.signInWithEmailAndPassword(e, p); 
-        } catch {
-            try {
-                const r = await auth.createUserWithEmailAndPassword(e, p);
-                // СРАЗУ сохраняем email в профиль для поиска
-                db.ref('users/' + r.user.uid).set({ name: 'Пилот', nickname: 'id'+Math.floor(Math.random()*999), email: e, phone: '', ava: '' });
-            } catch (error) { err.innerText = error.message; }
-        }
+    // --- 1. AUTH LOGIC ---
+    async function handleAuthStep1() {
+        const email = document.getElementById('auth-email').value;
+        if(!email) return;
+        try {
+            // Проверяем, есть ли пользователь. Если нет - создаем, если есть - шлем верификацию
+            document.getElementById('password-box').style.display = 'block';
+            document.getElementById('auth-msg').innerText = "Введите пароль. Если вы новый пилот, сначала подтвердите почту по ссылке, которую мы отправим после входа.";
+        } catch(e) { alert(e.message); }
+    }
+
+    async function handleAuthStep2() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        try {
+            let res;
+            try { 
+                res = await auth.signInWithEmailAndPassword(email, pass); 
+            } catch { 
+                res = await auth.createUserWithEmailAndPassword(email, pass);
+                db.ref('users/' + res.user.uid).set({ name: 'Пилот', email: email, ava: '' });
+            }
+            
+            if(!res.user.emailVerified) {
+                await res.user.sendEmailVerification();
+                alert("Код (ссылка) отправлен на почту! Пожалуйста, подтвердите её и обновите страницу.");
+            }
+        } catch(e) { alert(e.message); }
     }
 
     auth.onAuthStateChanged(u => {
         document.getElementById('scr-auth').classList.toggle('active', !u);
         document.getElementById('scr-main').classList.toggle('active', !!u);
-        if(u) { myId = u.uid; syncMainChats(); loadMyProfile(); }
+        if(u) {
+            myId = u.uid;
+            document.getElementById('my-id-display').innerText = "ВАШ ID: " + myId;
+            initNotifications();
+            syncData();
+        }
     });
 
-    // --- PROFILE ---
-    function loadMyProfile() {
-        db.ref('users/' + myId).on('value', snap => {
-            const d = snap.val(); if(!d) return;
-            document.getElementById('set-name').value = d.name || '';
-            document.getElementById('set-nick').value = d.nickname || '';
-            document.getElementById('set-phone').value = d.phone || '';
-            if(d.ava) {
-                document.getElementById('p-img').src = d.ava;
-                document.getElementById('p-img').style.display = 'block';
-                document.getElementById('p-icon').style.display = 'none';
+    // --- 2. NOTIFICATIONS ---
+    function initNotifications() {
+        if ("Notification" in window) Notification.requestPermission();
+    }
+
+    function pushNotify(title, body) {
+        if (Notification.permission === "granted" && document.hidden) {
+            new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/9356/9356230.png' });
+        }
+    }
+
+    // --- 3. DATA SYNC (ЗАКРЕПЛЕНИЕ ЧАТОВ) ---
+    function syncData() {
+        // Слушаем список активных чатов (Сортировка по времени)
+        db.ref('active_dialogues/' + myId).orderByValue().on('value', async snap => {
+            if(activeTab !== 'chats') return;
+            const container = document.getElementById('view-chats');
+            container.innerHTML = '';
+            
+            let chats = [];
+            snap.forEach(c => { chats.push({id: c.key, t: c.val()}); });
+            chats.reverse(); // Новые сверху
+
+            for(let c of chats) {
+                const u = (await db.ref('users/'+c.id).once('value')).val();
+                if(u) container.innerHTML += renderUserItem(c.id, u, false);
             }
         });
-    }
 
-    function uploadAva(input) {
-        const reader = new FileReader();
-        reader.onload = (e) => db.ref('users/' + myId).update({ ava: e.target.result });
-        if(input.files[0]) reader.readAsDataURL(input.files[0]);
-    }
-
-    function saveProfile() {
-        db.ref('users/' + myId).update({
-            name: document.getElementById('set-name').value,
-            nickname: document.getElementById('set-nick').value,
-            phone: document.getElementById('set-phone').value
-        }).then(() => { alert("Данные обновлены!"); hideSettings(); });
-    }
-
-    // --- MAIN SCREEN SYNC (ОШИБКИ 1 И 2 ИСПРАВЛЕНЫ) ---
-    function syncMainChats() {
-        // Постоянно слушаем НАШУ ветку активных диалогов
-        db.ref('active_dialogues/' + myId).on('value', snap => {
-            if(activeTab === 'chats') renderChats(snap);
-        });
-    }
-
-    function renderChats(snap) {
-        const container = document.getElementById('view-chats');
-        container.innerHTML = '';
-        if(!snap.exists()) { container.innerHTML = '<p style="text-align:center; padding:40px; color:#8696a0;">Нет активных диалогов</p>'; return; }
-        
-        let chatList = [];
-        snap.forEach(c => { chatList.push({ id: c.key, time: c.val() }); });
-        chatList.sort((a,b) => b.time - a.time); // Сортировка: новые сверху
-
-        chatList.forEach(chat => {
-            db.ref('users/' + chat.id).once('value', u => {
-                if(u.exists()) {
-                    const d = u.val();
-                    const photo = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
-                    container.innerHTML += `
-                    <div class="item" onclick="openChat('${chat.id}','${d.name}')">
-                        <div class="ava">${photo}</div>
-                        <div style="flex:1"><b>${d.name}</b><br><small style="color:#8696a0">@${d.nickname}</small></div>
-                    </div>`;
-                }
+        // Слушаем вкладку контактов
+        db.ref('contacts/' + myId).on('value', async snap => {
+            if(activeTab !== 'contacts') return;
+            const container = document.getElementById('view-contacts');
+            container.innerHTML = '';
+            snap.forEach(async c => {
+                const u = (await db.ref('users/'+c.key).once('value')).val();
+                if(u) container.innerHTML += renderUserItem(c.key, u, false);
             });
         });
     }
 
-    // --- SEARCH (ОШИБКА 5 ИСПРАВЛЕНА) ---
-    function handleSearch() {
-        const q = document.getElementById('gSearch').value.toLowerCase().trim();
-        const container = document.getElementById('view-' + activeTab);
-        if(!q) { 
-            if(activeTab === 'chats') db.ref('active_dialogues/' + myId).once('value', renderChats);
-            return; 
-        }
+    function renderUserItem(id, d, isSearch) {
+        return `
+        <div class="item">
+            <div class="ava" onclick="openChat('${id}','${d.name}')">
+                ${d.ava ? `<img src="${d.ava}">` : '<i class="fas fa-user"></i>'}
+            </div>
+            <div style="flex:1" onclick="openChat('${id}','${d.name}')">
+                <b>${d.name}</b><br><small style="color:#8696a0">${d.email}</small>
+            </div>
+            ${isSearch ? `<button onclick="addContact('${id}')" style="color:var(--accent); background:none; border:none; font-size:20px;"><i class="fas fa-user-plus"></i></button>` : ''}
+        </div>`;
+    }
+
+    // --- 4. SEARCH (ПО ID И EMAIL) ---
+    async function globalSearch() {
+        const q = document.getElementById('mainSearch').value.trim();
+        const container = document.getElementById('view-chats');
+        container.innerHTML = '<p style="text-align:center; padding:20px;">Поиск в глубоком космосе...</p>';
         
         db.ref('users').once('value', snap => {
             container.innerHTML = '';
-            let found = false;
             snap.forEach(u => {
                 const d = u.val();
-                if(u.key !== myId) {
-                    // Ищем по 4 параметрам: Имя, Ник, Почта, Телефон
-                    const n = (d.name || '').toLowerCase();
-                    const nn = (d.nickname || '').toLowerCase();
-                    const e = (d.email || '').toLowerCase();
-                    const p = (d.phone || '').toLowerCase();
-                    
-                    if(n.includes(q) || nn.includes(q) || e.includes(q) || p.includes(q)) {
-                        const photo = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
-                        container.innerHTML += `
-                        <div class="item">
-                            <div class="ava" onclick="openChat('${u.key}','${d.name}')">${photo}</div>
-                            <div style="flex:1" onclick="openChat('${u.key}','${d.name}')">
-                                <b>${d.name}</b><br><small style="color:#8696a0">${d.email || d.phone || '@'+d.nickname}</small>
-                            </div>
-                            <i class="fas fa-comment-dots" style="color:var(--accent); font-size:20px;" onclick="openChat('${u.key}','${d.name}')"></i>
-                        </div>`;
-                        found = true;
-                    }
+                if(u.key === q || d.email === q) {
+                    container.innerHTML += renderUserItem(u.key, d, true);
                 }
             });
-            if(!found) container.innerHTML = '<p style="text-align:center; padding:20px; color:#8696a0;">Пилот не найден</p>';
         });
     }
 
-    // --- CHAT & MESSAGING ---
+    function addContact(id) {
+        db.ref('contacts/' + myId + '/' + id).set(true);
+        alert("Пилот добавлен в контакты!");
+    }
+
+    // --- 5. MESSAGING CORE ---
     function openChat(id, name) {
         selId = id;
-        document.getElementById('c-name').innerText = name;
-        const scr = document.getElementById('scr-chat');
-        scr.style.display = 'flex';
-        setTimeout(() => scr.classList.add('open'), 10);
-
-        db.ref('users/' + id).once('value', snap => {
-            const d = snap.val() || {nickname: 'ai', phone: ''};
-            document.getElementById('c-info').innerText = d.phone || `@${d.nickname}`;
-            document.getElementById('c-ava').innerHTML = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
-        });
-
+        document.getElementById('chat-title').innerText = name;
+        document.getElementById('scr-chat').classList.add('open');
+        
         const cid = [myId, id].sort().join('_');
-        if(msgListen) db.ref('msgs/' + msgListen).off();
-        msgListen = cid;
+        if(chatListener) db.ref('msgs/'+chatListener).off();
+        chatListener = cid;
 
         db.ref('msgs/' + cid).on('value', snap => {
             const box = document.getElementById('chat-box');
@@ -308,93 +278,73 @@
             snap.forEach(m => {
                 const d = m.val();
                 const isMe = d.f === myId;
-                box.innerHTML += `<div class="bubble ${isMe?'m-me':'m-he'}">${d.x}</div>`;
+                const time = new Date(d.t).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const status = d.s === 2 ? '✓✓' : '✓';
+                
+                let content = d.type === 'file' ? 
+                    `<a href="${d.x}" download="file" class="file-msg"><i class="fas fa-file-download"></i> Файл</a>` : d.x;
+
+                box.innerHTML += `
+                    <div class="bubble ${isMe ? 'm-me' : 'm-he'}">
+                        ${content}
+                        <div class="m-meta">${time} <span>${isMe ? status : ''}</span></div>
+                    </div>`;
+                
+                // Если сообщение не моё и не прочитано - ставим статус "прочитано"
+                if(!isMe && d.s === 1) db.ref('msgs/'+cid+'/'+m.key).update({s: 2});
             });
             box.scrollTop = box.scrollHeight;
         });
     }
 
-    function send() {
+    function sendText() {
         const inp = document.getElementById('msg-input');
-        const text = inp.value.trim();
-        if(!text || !selId) return;
-
-        const cid = [myId, selId].sort().join('_');
-        const now = Date.now();
-        
-        // Отправка в базу
-        db.ref('msgs/' + cid).push({ f: myId, x: text, t: now });
-        
-        // ЖЕЛЕЗНОЕ ЗАКРЕПЛЕНИЕ ЧАТА ДЛЯ ОБОИХ
-        db.ref(`active_dialogues/${myId}/${selId}`).set(now);
-        db.ref(`active_dialogues/${selId}/${myId}`).set(now);
-
-        if(selId === 'gemini_ai') triggerGemini(text, cid);
+        if(!inp.value.trim()) return;
+        pushMsg(inp.value, 'text');
         inp.value = '';
     }
 
-    // --- GEMINI AI CORE (ОШИБКА 3 ИСПРАВЛЕНА) ---
-    async function triggerGemini(text, cid) {
-        const typingIndicator = document.getElementById('ai-status');
-        typingIndicator.style.display = 'block'; // Показываем "печатает..."
-        
-        // 1. ЕСЛИ ВСТАВЛЕН НАСТОЯЩИЙ API КЛЮЧ
-        if(GEMINI_API_KEY !== "YOUR_GEMINI_API_KEY") {
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-                });
-                const data = await response.json();
-                const reply = data.candidates[0].content.parts[0].text;
-                saveAiResponse(reply, cid, typingIndicator);
-            } catch (error) {
-                saveAiResponse("Сбой связи с серверами Google. Переход на резервный контур.", cid, typingIndicator);
-            }
-        } 
-        // 2. ЕСЛИ КЛЮЧА НЕТ - УМНАЯ СИМУЛЯЦИЯ
-        else {
-            setTimeout(() => {
-                let r = "";
-                const q = text.toLowerCase();
-                if(q.includes("привет")) r = "Приветствую, Командир. Системы в норме. Готов к выполнению задач.";
-                else if(q.includes("как дела") || q.includes("статус")) r = "Все системы функционируют на 100%. Ошибки в коде устранены. База данных стабильна.";
-                else if(q.includes("кто ты")) r = "Я искусственный интеллект Gemini. Сейчас я работаю в режиме симуляции ядра. Для полной интеграции добавьте API-ключ в исходный код.";
-                else if(q.includes("ошибка") || q.includes("не работает")) r = "Сканирую логи... Похоже, это фантомная ошибка. Я пересобрал узлы связи, теперь сообщения доходят железно.";
-                else r = `Запрос "${text}" получен. Я проанализировал данные — параметры орбиты стабильны. Чем еще могу помочь?`;
-                
-                saveAiResponse(r, cid, typingIndicator);
-            }, 2000); // Имитация времени на раздумья
-        }
+    async function sendFile(input) {
+        const file = input.files[0];
+        if(!file) return;
+        if(file.size > 20 * 1024 * 1024) { alert("Ошибка: Файл тяжелее 20 МБ!"); return; }
+
+        const reader = new FileReader();
+        reader.onload = (e) => pushMsg(e.target.result, 'file');
+        reader.readAsDataURL(file);
     }
 
-    function saveAiResponse(reply, cid, indicator) {
-        indicator.style.display = 'none'; // Скрываем "печатает..."
+    function pushMsg(val, type) {
+        const cid = [myId, selId].sort().join('_');
         const now = Date.now();
-        db.ref('msgs/' + cid).push({ f: 'gemini_ai', x: reply, t: now });
-        db.ref(`active_dialogues/${myId}/gemini_ai`).set(now);
+        const msg = { f: myId, x: val, t: now, s: 1, type: type };
+        
+        db.ref('msgs/' + cid).push(msg);
+        // ЗАКРЕПЛЕНИЕ: Обновляем время активности для обоих
+        db.ref('active_dialogues/' + myId + '/' + selId).set(now);
+        db.ref('active_dialogues/' + selId + '/' + myId).set(now);
     }
 
-    // --- NAVIGATION ---
-    function closeChat() {
-        const scr = document.getElementById('scr-chat');
-        scr.classList.remove('open');
-        setTimeout(() => { scr.style.display = 'none'; selId = null; if(msgListen) db.ref('msgs/' + msgListen).off(); }, 300);
-    }
-
+    // --- 6. UTILS ---
     function tab(name, el) {
-        ['chats', 'contacts', 'calls', 'status'].forEach(t => document.getElementById('view-'+t).style.display = 'none');
-        document.getElementById('view-'+name).style.display = 'block';
+        activeTab = name;
         document.querySelectorAll('.nav-t').forEach(n => n.classList.remove('active'));
         el.classList.add('active');
-        activeTab = name;
-        document.getElementById('gSearch').value = ''; // Сброс поиска
-        if(name === 'chats') db.ref('active_dialogues/' + myId).once('value', renderChats);
+        document.getElementById('view-chats').style.display = name === 'chats' ? 'block' : 'none';
+        document.getElementById('view-contacts').style.display = name === 'contacts' ? 'block' : 'none';
+        syncData();
     }
 
+    function closeChat() { 
+        document.getElementById('scr-chat').classList.remove('open'); 
+        if(chatListener) db.ref('msgs/'+chatListener).off();
+    }
     function showSettings() { document.getElementById('scr-settings').classList.add('active'); }
     function hideSettings() { document.getElementById('scr-settings').classList.remove('active'); }
+    function saveProfile() {
+        const n = document.getElementById('set-name').value;
+        db.ref('users/'+myId).update({name: n}).then(() => hideSettings());
+    }
 </script>
 </body>
 </html>
