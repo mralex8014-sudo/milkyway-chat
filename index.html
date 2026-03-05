@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MilkyWay Commander Edition</title>
+    <title>MilkyWay Commander</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -15,7 +15,7 @@
             --nebula: #6c5ce7;
             --ai-glow: #00ff88;
             --danger: #ff4757;
-            --glass: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.1);
             --border: rgba(255, 255, 255, 0.15);
         }
 
@@ -29,108 +29,115 @@
             overflow: hidden;
         }
 
-        /* --- ЛОГО И КОМЕТА --- */
+        /* --- ЭФФЕКТЫ --- */
         .logo-emblem { 
-            width: 45px; height: 45px; background: linear-gradient(45deg, var(--accent), var(--nebula));
+            width: 40px; height: 40px; background: linear-gradient(45deg, var(--accent), var(--nebula));
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px var(--accent); animation: comet-flicker 2s infinite alternate; font-size: 20px;
+            box-shadow: 0 0 15px var(--accent); animation: comet 2s infinite alternate;
         }
-        @keyframes comet-flicker {
-            0% { box-shadow: 0 0 10px var(--accent); transform: scale(1); }
-            100% { box-shadow: 0 0 25px var(--nebula); transform: scale(1.05); }
-        }
+        @keyframes comet { from { transform: scale(1); box-shadow: 0 0 10px var(--accent); } to { transform: scale(1.05); box-shadow: 0 0 20px var(--nebula); } }
 
         /* --- ЭКРАНЫ --- */
         .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; background: inherit; z-index: 10; }
         .active { display: flex; }
 
         /* --- ШАПКА --- */
-        .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
-        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-        .search-container { background: var(--glass); border-radius: 12px; padding: 10px 15px; display: flex; align-items: center; border: 1px solid var(--border); }
-        .search-container input { background: none; border: none; color: #fff; flex: 1; outline: none; margin-left: 10px; font-size: 14px; }
-
-        /* --- НАВИГАЦИЯ --- */
-        .bottom-nav {
-            height: 75px; background: #080a0f; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-            position: absolute; bottom: 0; width: 100%; z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #8696a0; flex: 1; gap: 4px; cursor: pointer; font-size: 11px; }
-        .nav-tab.active { color: var(--accent); text-shadow: 0 0 10px rgba(0,210,255,0.3); }
+        .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); z-index: 50; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .search-box { background: var(--glass); border-radius: 12px; padding: 8px 15px; display: flex; align-items: center; border: 1px solid var(--border); }
+        .search-box input { background: none; border: none; color: #fff; flex: 1; outline: none; margin-left: 10px; }
 
         /* --- СПИСКИ --- */
         .scroller { flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); position: relative; }
-        .item-info { flex: 1; }
-        .item-actions { display: flex; gap: 10px; }
-        .action-btn { color: var(--accent); cursor: pointer; font-size: 18px; padding: 5px; }
-        .action-btn.del { color: var(--danger); }
+        .user-item { padding: 12px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .ava { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; background: #1a1f2b; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ava img { width: 100%; height: 100%; object-fit: cover; }
+        .user-info { flex: 1; overflow: hidden; }
+        .user-info b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-info small { color: #8696a0; font-size: 12px; }
+
+        /* --- КНОПКИ ДЕЙСТВИЙ --- */
+        .actions { display: flex; gap: 15px; font-size: 18px; }
+        .btn-add { color: var(--accent); }
+        .btn-ban { color: var(--danger); opacity: 0.6; }
+        .btn-ban.active { opacity: 1; text-shadow: 0 0 10px var(--danger); }
 
         /* --- ЧАТ --- */
-        #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.3s; background: #000; }
+        #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
         #scr-chat.open { transform: translateX(0); }
-        .chat-wallpaper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
+        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
         
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 15px; position: relative; }
-        .msg-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 75%; font-size: 15px; position: relative; line-height: 1.4; }
+        .m-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
+        .m-he { background: rgba(35, 45, 55, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
 
-        /* --- ЗВЕЗДЫ СТАТУСА --- */
-        .msg-status { font-size: 10px; margin-left: 8px; vertical-align: middle; }
-        .star-read { animation: star-flicker 1.5s infinite; color: var(--accent); }
-        @keyframes star-flicker { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+        /* --- СТАТУС ЗВЕЗД --- */
+        .stars { font-size: 10px; margin-left: 5px; letter-spacing: 1px; }
+        .star-active { color: var(--accent); animation: glow 1.5s infinite; }
+        @keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
-        .ava { width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #1a1f2b; }
-        .ava img { width: 100%; height: 100%; object-fit: cover; }
-        .cosmo-input { width: 100%; padding: 14px; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; outline: none; }
+        /* --- НАВИГАЦИЯ --- */
+        .nav { height: 75px; background: #080a0f; border-top: 1px solid var(--border); display: flex; position: absolute; bottom: 0; width: 100%; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-t { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8696a0; gap: 4px; cursor: pointer; font-size: 11px; }
+        .nav-t.active { color: var(--accent); }
+
+        .empty-hint { padding: 60px 40px; text-align: center; color: #8696a0; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div id="scr-auth" class="screen active" style="justify-content:center; padding:40px;">
-        <center><div class="logo-emblem"><i class="fas fa-meteor"></i></div></center>
-        <input type="email" id="email" class="cosmo-input" placeholder="Email" style="margin-top:30px;">
-        <input type="password" id="pass" class="cosmo-input" placeholder="Пароль" style="margin: 15px 0;">
-        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ЗАПУСК СИСТЕМ</button>
+        <div style="text-align:center; margin-bottom:40px;">
+            <center><div class="logo-emblem"><i class="fas fa-meteor"></i></div></center>
+            <h2 style="margin-top:15px; letter-spacing:4px;">MILKYWAY</h2>
+        </div>
+        <input type="email" id="email" style="width:100%; padding:15px; background:var(--glass); border:1px solid var(--border); border-radius:12px; color:#fff; margin-bottom:15px;" placeholder="Почта">
+        <input type="password" id="pass" style="width:100%; padding:15px; background:var(--glass); border:1px solid var(--border); border-radius:12px; color:#fff; margin-bottom:20px;" placeholder="Пароль">
+        <button onclick="authAction()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ВОЙТИ В ГИПЕРПРОСТРАНСТВО</button>
     </div>
 
     <div id="scr-main" class="screen">
         <div class="header">
             <div class="header-top">
-                <span class="logo-text" style="font-size:18px;">MILKYWAY</span>
-                <i class="fas fa-cog" style="color:#8696a0; cursor:pointer;" onclick="showSettings()"></i>
+                <span style="font-weight:900; letter-spacing:2px; color:var(--accent);">MILKYWAY</span>
+                <div style="display:flex; gap:20px;">
+                    <i class="fas fa-robot" onclick="openChat('gemini_ai', 'Gemini AI')" style="color:var(--ai-glow); cursor:pointer;"></i>
+                    <i class="fas fa-cog" onclick="showSettings()" style="color:#8696a0; cursor:pointer;"></i>
+                </div>
             </div>
-            <div class="search-container">
+            <div class="search-box">
                 <i class="fas fa-search" style="color:#8696a0;"></i>
-                <input type="text" id="gSearch" placeholder="Найти пилота по ID или Email..." oninput="runGlobalSearch()">
+                <input type="text" id="mainSearch" placeholder="Поиск по ID или почте..." oninput="handleSearch()">
             </div>
         </div>
 
-        <div id="sect-chats" class="scroller"></div>
-        <div id="sect-contacts" class="scroller" style="display:none;"></div>
-        <div id="sect-status" class="scroller" style="display:none; text-align:center; padding-top:50px; color:#8696a0;">Статусы систем активны</div>
+        <div id="view-chats" class="scroller"></div>
+        <div id="view-contacts" class="scroller" style="display:none;"></div>
+        <div id="view-status" class="scroller" style="display:none; text-align:center; padding-top:60px; color:#8696a0;">Системы слежения активны</div>
 
-        <nav class="bottom-nav">
-            <div class="nav-tab active" onclick="switchTab('chats', this)"><i class="fas fa-comment"></i><span>Чаты</span></div>
-            <div class="nav-tab" onclick="switchTab('contacts', this)"><i class="fas fa-address-book"></i><span>Контакты</span></div>
-            <div class="nav-tab" onclick="switchTab('status', this)"><i class="fas fa-star"></i><span>Статус</span></div>
+        <nav class="nav">
+            <div class="nav-t active" onclick="tab('chats', this)"><i class="fas fa-comment-dots"></i><span>Чаты</span></div>
+            <div class="nav-t" onclick="tab('contacts', this)"><i class="fas fa-user-friends"></i><span>Контакты</span></div>
+            <div class="nav-t" onclick="tab('status', this)"><i class="fas fa-satellite"></i><span>Статус</span></div>
         </nav>
     </div>
 
     <div id="scr-chat" class="screen">
         <div class="header" style="display:flex; align-items:center; gap:12px;">
-            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); cursor:pointer;"></i>
-            <div id="c-ava" class="ava" style="width:35px; height:35px;"></div>
-            <b id="c-name" style="flex:1"></b>
-            <i class="fas fa-trash-alt del" onclick="confirmDeleteChat()" style="color:var(--danger); cursor:pointer;"></i>
+            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); font-size:20px; cursor:pointer;"></i>
+            <div id="c-ava" class="ava" style="width:36px; height:36px;"></div>
+            <div style="flex:1">
+                <b id="c-name" style="font-size:16px;">Пилот</b>
+            </div>
+            <i class="fas fa-trash-alt" onclick="deleteDialogue()" style="color:var(--danger); cursor:pointer; font-size:18px;"></i>
         </div>
-        <div id="chat-box" class="chat-wallpaper"></div>
-        <div style="padding:15px; background:#0a0f19; display:flex; gap:10px;">
-            <input type="text" id="msg-input" class="cosmo-input" placeholder="Сообщение..." style="border-radius:25px;">
-            <button onclick="sendText()" style="width:45px; border-radius:50%; background:var(--accent); border:none;"><i class="fas fa-paper-plane"></i></button>
+        <div id="chat-box" class="chat-area"></div>
+        <div style="padding:15px; background:#0a0f19; display:flex; gap:10px; align-items:center;">
+            <input type="text" id="msg-input" style="flex:1; padding:12px 20px; background:var(--glass); border:1px solid var(--border); border-radius:30px; color:#fff; outline:none;" placeholder="Связь...">
+            <button onclick="sendMessage()" style="width:45px; height:45px; border-radius:50%; background:var(--accent); border:none; color:#000;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -147,153 +154,172 @@
     };
     firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    let myId = null, selId = null, currentTab = 'chats';
+    let myId = null, selId = null, curTab = 'chats';
 
     // --- АВТОРИЗАЦИЯ ---
-    async function authRun() {
+    async function authAction() {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
         try { await auth.signInWithEmailAndPassword(e, p); } catch {
             const r = await auth.createUserWithEmailAndPassword(e, p);
-            db.ref('users/' + r.user.uid).set({ name: e.split('@')[0], email: e, pilotId: 'ID'+Math.floor(Math.random()*9999) });
+            db.ref('users/' + r.user.uid).set({ name: e.split('@')[0], email: e, pilotId: 'P-'+Math.floor(1000+Math.random()*9000) });
         }
     }
 
     auth.onAuthStateChanged(u => {
         document.getElementById('scr-auth').classList.toggle('active', !u);
         document.getElementById('scr-main').classList.toggle('active', !!u);
-        if(u) { myId = u.uid; initApp(); }
+        if(u) { myId = u.uid; syncAll(); }
     });
 
-    function initApp() {
-        loadActiveChats();
+    // --- СИНХРОНИЗАЦИЯ ---
+    function syncAll() {
+        loadChats();
         loadContacts();
     }
 
-    // --- НАВИГАЦИЯ ---
-    function switchTab(tab, el) {
-        ['chats', 'contacts', 'status'].forEach(t => document.getElementById('sect-'+t).style.display = 'none');
-        document.getElementById('sect-'+tab).style.display = 'block';
-        document.querySelectorAll('.nav-tab').forEach(n => n.classList.remove('active'));
+    function tab(name, el) {
+        ['chats', 'contacts', 'status'].forEach(t => document.getElementById('view-'+t).style.display = 'none');
+        document.getElementById('view-'+name).style.display = 'block';
+        document.querySelectorAll('.nav-t').forEach(n => n.classList.remove('active'));
         el.classList.add('active');
-        currentTab = tab;
+        curTab = name;
     }
 
-    // --- ГЛОБАЛЬНЫЙ ПОИСК ---
-    function runGlobalSearch() {
-        const q = document.getElementById('gSearch').value.toLowerCase().trim();
-        const target = (currentTab === 'contacts') ? 'sect-contacts' : 'sect-chats';
-        if(q.length < 3) { initApp(); return; }
-        
+    // --- ЛОГИКА КОНТАКТОВ И ЧАТОВ ---
+    function handleSearch() {
+        const q = document.getElementById('mainSearch').value.toLowerCase().trim();
+        if(q.length < 3) { syncAll(); return; }
+
         db.ref('users').once('value', snap => {
-            let html = '';
+            const res = [];
             snap.forEach(u => {
                 const d = u.val();
                 if(u.key !== myId && (d.email.includes(q) || (d.pilotId && d.pilotId.toLowerCase().includes(q)))) {
-                    html += renderUserItem(u.key, d, true);
+                    res.push({id: u.key, ...d});
                 }
             });
-            document.getElementById(target).innerHTML = html || '<p style="padding:20px; color:#8696a0;">Пилот не найден</p>';
+            renderList(res, curTab === 'contacts' ? 'view-contacts' : 'view-chats', true);
         });
     }
 
-    // --- КОНТАКТЫ И ЧАТЫ ---
     function loadContacts() {
-        db.ref('users/' + myId + '/contacts').on('value', snap => {
-            const container = document.getElementById('sect-contacts');
+        db.ref(`users/${myId}/contacts`).on('value', snap => {
+            const container = document.getElementById('view-contacts');
+            if(!snap.exists()) { container.innerHTML = '<div class="empty-hint">Список контактов пуст. Найдите пилотов через поиск.</div>'; return; }
             container.innerHTML = '';
             snap.forEach(c => {
-                db.ref('users/' + c.key).once('value', uSnap => {
-                    container.innerHTML += renderUserItem(c.key, uSnap.val(), false, true);
+                db.ref(`users/${c.key}`).once('value', u => {
+                    container.innerHTML += renderUserCard(c.key, u.val(), false, true);
                 });
             });
         });
     }
 
-    function loadActiveChats() {
-        db.ref('user_chats/' + myId).on('value', snap => {
-            const container = document.getElementById('sect-chats');
+    function loadChats() {
+        db.ref(`active_dialogues/${myId}`).on('value', snap => {
+            const container = document.getElementById('view-chats');
+            if(!snap.exists()) { container.innerHTML = '<div class="empty-hint">Нет активных чатов. Начните диалог с кем-нибудь из контактов.</div>'; return; }
             container.innerHTML = '';
             snap.forEach(c => {
-                db.ref('users/' + c.key).once('value', uSnap => {
-                    container.innerHTML += renderUserItem(c.key, uSnap.val(), false, false, true);
+                db.ref(`users/${c.key}`).once('value', u => {
+                    container.innerHTML += renderUserCard(c.key, u.val(), false, false, true);
                 });
             });
         });
     }
 
-    function renderUserItem(id, d, isSearch, isContact, isChat) {
+    function renderUserCard(id, d, isSearch, isContact, isChat) {
         return `
-        <div class="item">
-            <div class="ava" onclick="openChat('${id}','${d.name}')">${d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user"></i>`}</div>
-            <div class="item-info" onclick="openChat('${id}','${d.name}')">
-                <b>${d.name}</b><br><small style="color:#8696a0">${d.pilotId || '@pilot'}</small>
+        <div class="user-item">
+            <div class="ava" onclick="openChat('${id}','${d.name}')">${d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`}</div>
+            <div class="user-info" onclick="openChat('${id}','${d.name}')">
+                <b>${d.name}</b>
+                <small>${d.pilotId || '@pilot'}</small>
             </div>
-            <div class="item-actions">
-                ${isSearch ? `<i class="fas fa-user-plus action-btn" onclick="addContact('${id}')"></i>` : ''}
-                ${isContact ? `<i class="fas fa-user-minus action-btn" onclick="removeContact('${id}')"></i>` : ''}
-                <i class="fas fa-ban action-btn del" onclick="toggleBlacklist('${id}')"></i>
+            <div class="actions">
+                ${isSearch ? `<i class="fas fa-user-plus btn-add" onclick="toggleContact('${id}', true)"></i>` : ''}
+                ${isContact ? `<i class="fas fa-user-minus" style="color:#8696a0" onclick="toggleContact('${id}', false)"></i>` : ''}
+                <i class="fas fa-user-slash btn-ban" onclick="toggleBlock('${id}')"></i>
             </div>
         </div>`;
     }
 
-    // --- ФУНКЦИОНАЛ ---
-    function addContact(id) { db.ref('users/'+myId+'/contacts/'+id).set(true); alert("Добавлен в контакты"); }
-    function removeContact(id) { db.ref('users/'+myId+'/contacts/'+id).remove(); }
-    
-    function toggleBlacklist(id) {
-        db.ref('users/'+myId+'/blacklist/'+id).transaction(val => val ? null : true);
+    function renderList(arr, targetId, isSearch) {
+        const container = document.getElementById(targetId);
+        container.innerHTML = arr.map(u => renderUserCard(u.id, u, isSearch)).join('');
+    }
+
+    // --- ФУНКЦИИ УПРАВЛЕНИЯ ---
+    function toggleContact(id, add) {
+        if(add) db.ref(`users/${myId}/contacts/${id}`).set(true);
+        else db.ref(`users/${myId}/contacts/${id}`).remove();
+    }
+
+    function toggleBlock(id) {
+        db.ref(`users/${myId}/blacklist/${id}`).transaction(val => val ? null : true);
         alert("Статус блокировки изменен");
     }
 
+    // --- ЧАТ И ЗВЕЗДЫ ---
     function openChat(id, name) {
         selId = id;
         document.getElementById('c-name').innerText = name;
         document.getElementById('scr-chat').classList.add('open', 'active');
         const cid = [myId, id].sort().join('_');
-        
-        db.ref('msgs/' + cid).on('value', snap => {
+
+        db.ref(`msgs/${cid}`).on('value', snap => {
             const box = document.getElementById('chat-box');
             box.innerHTML = '';
             snap.forEach(m => {
                 const d = m.val();
                 const isMe = d.f === myId;
-                let stars = '';
+                let sMarkup = '';
+                
                 if(isMe) {
-                    if(d.s === 2) stars = '<span class="msg-status star-read">★ ★</span>';
-                    else if(d.s === 1) stars = '<span class="msg-status">★ ★</span>';
-                    else stars = '<span class="msg-status">★</span>';
+                    if(d.s === 0) sMarkup = '<span class="stars">★</span>';
+                    if(d.s === 1) sMarkup = '<span class="stars">★★</span>';
+                    if(d.s === 2) sMarkup = '<span class="stars star-active">★★</span>';
                 }
-                box.innerHTML += `<div class="bubble ${isMe?'msg-me':'msg-he'}">${d.x} ${stars}</div>`;
-                if(!isMe && d.s < 2) db.ref('msgs/'+cid+'/'+m.key+'/s').set(2);
+
+                box.innerHTML += `<div class="msg ${isMe?'m-me':'m-he'}">${d.x}${sMarkup}</div>`;
+                
+                // Если сообщение не моё и не прочитано — читаем
+                if(!isMe && d.s < 2) db.ref(`msgs/${cid}/${m.key}/s`).set(2);
             });
             box.scrollTop = box.scrollHeight;
         });
-        db.ref('user_chats/'+myId+'/'+id).set(true);
     }
 
-    function sendText() {
-        const inp = document.getElementById('msg-input'); if(!inp.value.trim()) return;
+    function sendMessage() {
+        const inp = document.getElementById('msg-input');
+        const text = inp.value.trim();
+        if(!text || !selId) return;
+
         const cid = [myId, selId].sort().join('_');
-        const mKey = db.ref('msgs/' + cid).push().key;
-        db.ref('msgs/' + cid + '/' + mKey).set({ f: myId, x: inp.value, t: Date.now(), s: 0 });
+        const mKey = db.ref(`msgs/${cid}`).push().key;
+
+        db.ref(`msgs/${cid}/${mKey}`).set({ f: myId, x: text, t: Date.now(), s: 0 });
         
-        // Симуляция доставки
-        setTimeout(() => db.ref('msgs/'+cid+'/'+mKey+'/s').set(1), 1000);
-        
-        db.ref('user_chats/'+selId+'/'+myId).set(true);
+        // Симуляция доставки через 1 сек
+        setTimeout(() => db.ref(`msgs/${cid}/${mKey}/s`).set(1), 1000);
+
+        // Добавляем в активные диалоги обоим
+        db.ref(`active_dialogues/${myId}/${selId}`).set(Date.now());
+        db.ref(`active_dialogues/${selId}/${myId}`).set(Date.now());
+
         inp.value = '';
     }
 
-    function closeChat() { document.getElementById('scr-chat').classList.remove('open'); }
-
-    function confirmDeleteChat() {
-        if(confirm("Удалить всю историю переписки?")) {
+    function deleteDialogue() {
+        if(confirm("Стереть все данные этого диалога?")) {
             const cid = [myId, selId].sort().join('_');
-            db.ref('msgs/' + cid).remove();
-            db.ref('user_chats/' + myId + '/' + selId).remove();
+            db.ref(`msgs/${cid}`).remove();
+            db.ref(`active_dialogues/${myId}/${selId}`).remove();
             closeChat();
         }
     }
+
+    function closeChat() { document.getElementById('scr-chat').classList.remove('open'); }
 </script>
 </body>
 </html>
