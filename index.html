@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MilkyWay Pro</title>
+    <title>MilkyWay Fixed</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -28,51 +28,48 @@
             border-left: 1px solid var(--border); border-right: 1px solid var(--border);
         }
 
-        /* --- ЛОГОТИП --- */
+        /* --- UI ELEMENTS --- */
         .logo-emblem { 
             width: 42px; height: 42px; background: linear-gradient(45deg, var(--accent), var(--nebula));
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 15px var(--accent); animation: comet-glow 2s infinite alternate; font-size: 18px;
         }
-        @keyframes comet-glow {
-            0% { box-shadow: 0 0 10px var(--accent); transform: scale(1); }
-            100% { box-shadow: 0 0 25px var(--nebula); transform: scale(1.08); }
-        }
+        @keyframes comet-glow { from { transform: scale(1); } to { transform: scale(1.08); } }
 
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; background: inherit; z-index: 10; }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: inherit; z-index: 10; }
         .active { display: flex; }
 
         .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
         .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 
         .scroller { flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); cursor: pointer; }
+        .item { padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .item:active { background: var(--glass); }
 
         .ava { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #1a1f2b; flex-shrink: 0; }
         .ava img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- ЧАТ --- */
-        #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
+        /* --- CHAT ANIMATION --- */
+        #scr-chat { z-index: 1000; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
         #scr-chat.open { transform: translateX(0); }
         .chat-wallpaper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
         
-        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 15px; position: relative; }
+        .bubble { padding: 10px 15px; border-radius: 18px; max-width: 80%; font-size: 15px; position: relative; animation: pop 0.2s ease-out; }
+        @keyframes pop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
         .m-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
         .m-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-        .m-time { font-size: 10px; opacity: 0.6; margin-top: 4px; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
+        
+        /* --- STARS --- */
+        .star-anim { color: var(--accent); animation: star-pulse 1.5s infinite; text-shadow: 0 0 5px var(--accent); font-size: 9px; margin-left: 5px; }
+        @keyframes star-pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-        /* --- СТАТУС ЗВЕЗДА --- */
-        .status-loading { animation: spin-star 3s linear infinite; color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-        @keyframes spin-star { 0% { transform: rotate(0deg) scale(1); opacity: 0.7; } 50% { transform: rotate(180deg) scale(1.2); opacity: 1; } 100% { transform: rotate(360deg) scale(1); opacity: 0.7; } }
-
-        /* --- НАВИГАЦИЯ --- */
+        /* --- NAV --- */
         .nav { height: 75px; background: #080a0f; border-top: 1px solid var(--border); display: flex; position: absolute; bottom: 0; width: 100%; z-index: 100; }
         .nav-t { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #8696a0; gap: 4px; cursor: pointer; font-size: 11px; }
         .nav-t.active { color: var(--accent); }
 
         .cosmo-input { width: 100%; padding: 12px 15px; background: var(--glass); border: 1px solid var(--border); border-radius: 10px; color: #fff; outline: none; margin-bottom: 10px; }
-        .rocket-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; font-size: 18px; transition: 0.3s; }
-        .rocket-btn:active { transform: translateY(-5px); }
+        .rocket-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -80,31 +77,33 @@
 <div class="app-container">
     <div id="scr-auth" class="screen active" style="justify-content:center; padding:40px;">
         <center><div class="logo-emblem"><i class="fas fa-meteor"></i></div></center>
-        <input type="email" id="email" class="cosmo-input" placeholder="Email" style="margin-top:20px;">
+        <h3 style="text-align:center; margin:20px 0; letter-spacing:2px;">ВХОД В MILKYWAY</h3>
+        <input type="email" id="email" class="cosmo-input" placeholder="Космо-почта">
         <input type="password" id="pass" class="cosmo-input" placeholder="Пароль">
-        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ВОЙТИ</button>
+        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ЗАПУСТИТЬ ДВИГАТЕЛИ</button>
     </div>
 
     <div id="scr-main" class="screen">
         <div class="header">
             <div class="header-top">
-                <span style="font-weight:900; letter-spacing:1px;">MILKYWAY</span>
+                <span style="font-weight:900; letter-spacing:1px; color:var(--accent);">MILKYWAY</span>
                 <div style="display:flex; gap:15px;">
                     <i class="fas fa-robot" onclick="openChat('gemini_ai', 'Gemini AI')" style="color:var(--ai-glow); cursor:pointer;"></i>
-                    <i class="fas fa-cog" onclick="showSettings()" style="color:#8696a0; cursor:pointer;"></i>
+                    <i class="fas fa-user-astronaut" onclick="showSettings()" style="color:#8696a0; cursor:pointer; font-size:20px;"></i>
                 </div>
             </div>
             <div style="background:var(--glass); border-radius:10px; padding:8px 15px; display:flex; align-items:center;">
+                <i class="fas fa-search" style="color:#8696a0; margin-right:10px;"></i>
                 <input type="text" id="gSearch" placeholder="Поиск пилотов..." oninput="handleSearch()" style="background:none; border:none; color:#fff; flex:1; outline:none;">
             </div>
         </div>
 
         <div id="view-chats" class="scroller"></div>
         <div id="view-contacts" class="scroller" style="display:none;"></div>
-        <div id="view-calls" class="scroller" style="display:none; text-align:center; padding-top:60px; color:#8696a0;">Пусто</div>
-        <div id="view-status" class="scroller" style="display:none; text-align:center; padding-top:100px;">
-             <i class="fas fa-star status-loading" style="font-size:50px;"></i>
-             <p style="margin-top:20px; color:#8696a0;">Поиск сигналов...</p>
+        <div id="view-calls" class="scroller" style="display:none; text-align:center; padding:50px;">История вызовов пуста</div>
+        <div id="view-status" class="scroller" style="display:none; text-align:center; padding:100px;">
+             <i class="fas fa-star status-loading" style="font-size:50px; color:var(--accent); animation: spin 4s linear infinite;"></i>
+             <p style="margin-top:20px; color:#8696a0;">Сканирование созвездий...</p>
         </div>
 
         <nav class="nav">
@@ -116,37 +115,40 @@
     </div>
 
     <div id="scr-settings" class="screen" style="z-index:1100; background:#05070c;">
-        <div class="header"><i class="fas fa-arrow-left" onclick="hideSettings()"></i> <b>НАСТРОЙКИ</b></div>
+        <div class="header">
+            <i class="fas fa-arrow-left" onclick="hideSettings()" style="color:var(--accent); cursor:pointer; margin-right:15px;"></i>
+            <b>ПРОФИЛЬ ПИЛОТА</b>
+        </div>
         <div class="scroller" style="padding:25px; text-align:center;">
-            <div id="my-ava-box" class="ava" style="width:100px; height:100px; margin:0 auto 15px; position:relative;">
+            <div class="ava" style="width:110px; height:110px; margin:0 auto 15px; border-width:3px; position:relative;">
+                <img id="my-ava-img" style="display:none; width:100%; height:100%; border-radius:50%;">
                 <i class="fas fa-user-astronaut" id="def-icon" style="font-size:40px;"></i>
-                <img id="my-ava-img" style="display:none;">
             </div>
             <input type="file" id="file-input" style="display:none;" onchange="uploadAva(this)">
-            <button onclick="document.getElementById('file-input').click()" style="color:var(--accent); background:none; border:none; margin-bottom:20px;">Сменить фото</button>
+            <button onclick="document.getElementById('file-input').click()" style="color:var(--accent); background:none; border:none; margin-bottom:20px;">ИЗМЕНИТЬ ФОТО</button>
             
             <input type="text" id="set-name" class="cosmo-input" placeholder="Имя Фамилия">
-            <input type="text" id="set-nick" class="cosmo-input" placeholder="Никнейм">
+            <input type="text" id="set-nick" class="cosmo-input" placeholder="Никнейм (@id)">
             <input type="date" id="set-dob" class="cosmo-input">
             
-            <button onclick="saveProfile()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">СОХРАНИТЬ</button>
-            <button onclick="auth.signOut()" style="margin-top:20px; color:var(--danger); background:none; border:none;">ВЫЙТИ</button>
+            <button onclick="saveProfile()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000; margin-top:10px;">ОБНОВИТЬ ДАННЫЕ</button>
+            <button onclick="auth.signOut()" style="margin-top:30px; color:var(--danger); background:none; border:none;">ВЫЙТИ ИЗ СИСТЕМЫ</button>
         </div>
     </div>
 
     <div id="scr-chat" class="screen">
         <div class="header" style="display:flex; align-items:center; gap:12px;">
-            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); cursor:pointer;"></i>
+            <i class="fas fa-arrow-left" onclick="closeChat()" style="color:var(--accent); cursor:pointer; font-size:22px; padding:5px;"></i>
             <div id="c-ava" class="ava" style="width:38px; height:38px;"></div>
             <div style="flex:1"><b id="c-name"></b><br><small id="c-info" style="font-size:10px; color:#8696a0;"></small></div>
-            <div style="display:flex; gap:15px; color:var(--accent);">
-                <i class="fas fa-phone"></i><i class="fas fa-video"></i><i class="fas fa-trash" onclick="deleteChat()"></i>
+            <div style="display:flex; gap:18px; color:var(--accent); font-size:18px;">
+                <i class="fas fa-phone"></i><i class="fas fa-video"></i><i class="fas fa-trash-alt" onclick="deleteChat()"></i>
             </div>
         </div>
         <div id="chat-box" class="chat-wallpaper"></div>
         <div style="padding:15px; background:#0a0f19; display:flex; gap:10px; align-items:center;">
-            <i class="fas fa-paperclip" style="color:#8696a0;"></i>
-            <input type="text" id="msg-input" class="cosmo-input" placeholder="Текст..." style="margin:0; flex:1; border-radius:20px;">
+            <i class="fas fa-paperclip" style="color:#8696a0; font-size:20px;"></i>
+            <input type="text" id="msg-input" class="cosmo-input" placeholder="Связь..." style="margin:0; flex:1; border-radius:25px;">
             <button class="rocket-btn" onclick="send()"><i class="fas fa-shuttle-space"></i></button>
         </div>
     </div>
@@ -166,25 +168,26 @@
     const auth = firebase.auth(), db = firebase.database();
     let myId = null, selId = null, activeTab = 'chats';
 
-    // --- AUTH & PROFILE ---
+    // --- АВТОРИЗАЦИЯ ---
     async function authRun() {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        if(!e || !p) return;
         try { await auth.signInWithEmailAndPassword(e, p); } catch {
             const r = await auth.createUserWithEmailAndPassword(e, p);
-            db.ref('users/' + r.user.uid).set({ name: 'Пилот', nickname: 'id'+Math.floor(Math.random()*999), ava: '' });
+            db.ref('users/' + r.user.uid).set({ name: 'Пилот', nickname: 'id'+Math.floor(Math.random()*999), ava: '', dob: '' });
         }
     }
 
     auth.onAuthStateChanged(u => {
         document.getElementById('scr-auth').classList.toggle('active', !u);
         document.getElementById('scr-main').classList.toggle('active', !!u);
-        if(u) { myId = u.uid; sync(); loadMyData(); }
+        if(u) { myId = u.uid; syncMain(); loadMyProfile(); }
     });
 
-    function loadMyData() {
+    // --- ПРОФИЛЬ ---
+    function loadMyProfile() {
         db.ref('users/' + myId).on('value', snap => {
-            const d = snap.val();
-            if(!d) return;
+            const d = snap.val(); if(!d) return;
             document.getElementById('set-name').value = d.name || '';
             document.getElementById('set-nick').value = d.nickname || '';
             document.getElementById('set-dob').value = d.dob || '';
@@ -210,10 +213,10 @@
         }).then(() => hideSettings());
     }
 
-    // --- NAVIGATION ---
+    // --- НАВИГАЦИЯ (ИСПРАВЛЕНО) ---
     function tab(name, el) {
         ['chats', 'contacts', 'calls', 'status'].forEach(t => document.getElementById('view-'+t).style.display = 'none');
-        document.getElementById('view-'+name).style.display = (name === 'status') ? 'block' : 'block';
+        document.getElementById('view-'+name).style.display = 'block';
         document.querySelectorAll('.nav-t').forEach(n => n.classList.remove('active'));
         el.classList.add('active');
         activeTab = name;
@@ -222,102 +225,148 @@
     function showSettings() { document.getElementById('scr-settings').classList.add('active'); }
     function hideSettings() { document.getElementById('scr-settings').classList.remove('active'); }
 
-    // --- LOGIC ---
-    function sync() {
-        loadList('view-chats', 'active_dialogues/' + myId);
-        loadList('view-contacts', 'users/' + myId + '/contacts');
-    }
-
-    function loadList(viewId, path) {
-        db.ref(path).on('value', snap => {
-            const container = document.getElementById(viewId); container.innerHTML = '';
-            snap.forEach(c => {
-                db.ref('users/' + c.key).once('value', u => {
-                    if(u.exists()) container.innerHTML += renderItem(c.key, u.val(), false, viewId === 'view-contacts');
-                });
-            });
-        });
-    }
-
-    function renderItem(id, d, isSearch, isContact) {
-        const photo = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
-        return `<div class="item">
-            <div class="ava" onclick="openChat('${id}','${d.name}')">${photo}</div>
-            <div style="flex:1" onclick="openChat('${id}','${d.name}')">
-                <b>${d.name || 'Пилот'}</b><br><small style="color:#8696a0">@${d.nickname || ''}</small>
-            </div>
-            <div>
-                ${isSearch ? `<i class="fas fa-plus" onclick="addContact('${id}')"></i>` : ''}
-            </div>
-        </div>`;
-    }
-
-    function handleSearch() {
-        const q = document.getElementById('gSearch').value.toLowerCase();
-        db.ref('users').once('value', snap => {
-            let h = '';
-            snap.forEach(u => {
-                const d = u.val();
-                if(u.key !== myId && ((d.name||'').toLowerCase().includes(q) || (d.nickname||'').toLowerCase().includes(q))) {
-                    h += renderItem(u.key, d, true);
-                }
-            });
-            document.getElementById('view-'+activeTab).innerHTML = h;
-        });
-    }
-
-    function addContact(id) { db.ref(`users/${myId}/contacts/${id}`).set(true); alert("Добавлено!"); }
-
-    // --- CHAT & GEMINI ---
     function openChat(id, name) {
         selId = id;
         document.getElementById('c-name').innerText = name;
-        document.getElementById('scr-chat').classList.add('open', 'active');
-        
+        const chatScreen = document.getElementById('scr-chat');
+        chatScreen.classList.add('active'); // Активируем экран
+        setTimeout(() => chatScreen.classList.add('open'), 10); // Запускаем анимацию сдвига
+
+        // Грузим инфо собеседника
         db.ref('users/' + id).once('value', snap => {
-            const d = snap.val() || {nickname: 'ai', dob: '∞'};
+            const d = snap.val() || {nickname: 'unknown', dob: '???'};
             document.getElementById('c-info').innerText = `@${d.nickname} | ${d.dob}`;
             document.getElementById('c-ava').innerHTML = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
         });
 
+        // СЛУШАТЕЛЬ СООБЩЕНИЙ (ИСПРАВЛЕНО)
         const cid = [myId, id].sort().join('_');
         db.ref('msgs/' + cid).on('value', snap => {
             const box = document.getElementById('chat-box'); box.innerHTML = '';
             snap.forEach(m => {
                 const d = m.val();
                 const isMe = d.f === myId;
-                const stars = (isMe && d.s === 2) ? '<span class="status-loading" style="font-size:8px">★★</span>' : (isMe ? (d.s===1?'★★':'★') : '');
-                box.innerHTML += `<div class="bubble ${isMe?'m-me':'m-he'}">${d.x}<div class="m-time">${stars}</div></div>`;
+                let starMarkup = '';
+                if(isMe) {
+                    if(d.s === 0) starMarkup = '★';
+                    else if(d.s === 1) starMarkup = '★★';
+                    else starMarkup = '<span class="star-anim">★★</span>';
+                }
+                box.innerHTML += `<div class="bubble ${isMe?'m-me':'m-he'}">
+                    ${d.x}
+                    <div style="font-size:9px; opacity:0.6; text-align:right; margin-top:4px;">${starMarkup}</div>
+                </div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
     }
 
+    function closeChat() {
+        const chatScreen = document.getElementById('scr-chat');
+        chatScreen.classList.remove('open'); // Убираем сдвиг
+        setTimeout(() => {
+            chatScreen.classList.remove('active'); // Полностью скрываем после анимации
+            selId = null;
+        }, 300);
+    }
+
+    // --- МЕССЕНДЖИНГ ---
     function send() {
-        const inp = document.getElementById('msg-input'); if(!inp.value.trim()) return;
+        const inp = document.getElementById('msg-input');
+        const text = inp.value.trim();
+        if(!text || !selId) return;
+
         const cid = [myId, selId].sort().join('_');
-        const text = inp.value;
         const mKey = db.ref('msgs/' + cid).push().key;
+
+        // Отправка
         db.ref(`msgs/${cid}/${mKey}`).set({ f: myId, x: text, t: Date.now(), s: 0 });
         
+        // Помечаем диалог активным для обоих
         db.ref(`active_dialogues/${myId}/${selId}`).set(Date.now());
         db.ref(`active_dialogues/${selId}/${myId}`).set(Date.now());
-        
-        setTimeout(() => db.ref(`msgs/${cid}/${mKey}/s`).set(1), 1000);
-        
-        if(selId === 'gemini_ai') geminiReply(text, cid);
+
+        // Симуляция доставки
+        setTimeout(() => db.ref(`msgs/${cid}/${mKey}/s`).set(1), 800);
+
+        if(selId === 'gemini_ai') geminiResponse(text, cid);
         inp.value = '';
     }
 
-    function geminiReply(q, cid) {
+    function geminiResponse(q, cid) {
         setTimeout(() => {
             const rKey = db.ref('msgs/' + cid).push().key;
-            db.ref(`msgs/${cid}/${rKey}`).set({ f: 'gemini_ai', x: "Сигнал получен. Анализирую данные... Я на связи, Командир!", t: Date.now(), s: 2 });
-        }, 2000);
+            db.ref(`msgs/${cid}/${rKey}`).set({ f: 'gemini_ai', x: "Принято, Командир. Системы MilkyWay работают стабильно. Ожидаю дальнейших указаний.", t: Date.now(), s: 2 });
+        }, 1500);
     }
 
-    function closeChat() { document.getElementById('scr-chat').classList.remove('open'); }
-    function deleteChat() { /* логика удаления */ }
+    // --- СИНХРОНИЗАЦИЯ СПИСКОВ ---
+    function syncMain() {
+        // Слушаем список активных чатов
+        db.ref('active_dialogues/' + myId).on('value', snap => {
+            const container = document.getElementById('view-chats');
+            container.innerHTML = '';
+            if(!snap.exists()) container.innerHTML = '<p style="text-align:center; padding:40px; color:#8696a0;">Нет активных диалогов</p>';
+            snap.forEach(c => {
+                db.ref('users/' + c.key).once('value', u => {
+                    if(u.exists()) container.innerHTML += renderUser(c.key, u.val());
+                });
+            });
+        });
+
+        // Слушаем контакты
+        db.ref(`users/${myId}/contacts`).on('value', snap => {
+            const container = document.getElementById('view-contacts');
+            container.innerHTML = '';
+            snap.forEach(c => {
+                db.ref('users/' + c.key).once('value', u => {
+                    if(u.exists()) container.innerHTML += renderUser(c.key, u.val(), false, true);
+                });
+            });
+        });
+    }
+
+    function renderUser(id, d, isSearch, isContact) {
+        const photo = d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`;
+        return `
+        <div class="item">
+            <div class="ava" onclick="openChat('${id}','${d.name}')">${photo}</div>
+            <div style="flex:1" onclick="openChat('${id}','${d.name}')">
+                <b>${d.name || 'Пилот'}</b><br><small style="color:#8696a0">@${d.nickname || ''}</small>
+            </div>
+            <div>
+                ${isSearch ? `<i class="fas fa-plus-circle" style="color:var(--accent); font-size:20px;" onclick="addContact('${id}')"></i>` : ''}
+                ${isContact ? `<i class="fas fa-user-minus" style="color:#8696a0;" onclick="removeContact('${id}')"></i>` : ''}
+            </div>
+        </div>`;
+    }
+
+    function handleSearch() {
+        const q = document.getElementById('gSearch').value.toLowerCase().trim();
+        if(!q) { syncMain(); return; }
+        db.ref('users').once('value', snap => {
+            let h = '';
+            snap.forEach(u => {
+                const d = u.val();
+                if(u.key !== myId && ((d.name||'').toLowerCase().includes(q) || (d.nickname||'').toLowerCase().includes(q))) {
+                    h += renderUser(u.key, d, true);
+                }
+            });
+            document.getElementById('view-'+activeTab).innerHTML = h || '<p style="padding:20px; color:#8696a0;">Никого не нашли...</p>';
+        });
+    }
+
+    function addContact(id) { db.ref(`users/${myId}/contacts/${id}`).set(true); alert("Добавлено в контакты"); }
+    function removeContact(id) { db.ref(`users/${myId}/contacts/${id}`).remove(); }
+
+    function deleteChat() {
+        if(confirm("Удалить диалог навсегда?")) {
+            const cid = [myId, selId].sort().join('_');
+            db.ref('msgs/' + cid).remove();
+            db.ref(`active_dialogues/${myId}/${selId}`).remove();
+            closeChat();
+        }
+    }
 </script>
 </body>
 </html>
