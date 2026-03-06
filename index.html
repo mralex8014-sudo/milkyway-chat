@@ -3,108 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Original 🌌</title>
+    <title>MilkyWay Ultra 🌌</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root { 
-            --accent: #00a2ff; 
-            --bg: #0b0e14; 
-            --panel: #161b22; 
-            --text: #e6edf3; 
-            --border: #30363d;
-        }
+        :root { --accent: #00a2ff; --bg: #0b0e14; --panel: #161b22; --border: #30363d; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; height: 100vh; display: flex; justify-content: center; overflow: hidden; }
+        
+        .app-container { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; position: relative; border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+        
+        /* Меню */
+        #sidebar { position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; visibility: hidden; opacity: 0; transition: 0.3s; }
+        #sidebar.open { visibility: visible; opacity: 1; }
+        .sidebar-drawer { width: 300px; height: 100%; background: var(--panel); transform: translateX(-100%); transition: 0.3s; padding: 40px 20px; }
+        #sidebar.open .sidebar-drawer { transform: translateX(0); }
 
-        body { 
-            margin: 0; background: #000; color: var(--text); 
-            font-family: -apple-system, sans-serif; 
-            display: flex; justify-content: center; height: 100vh; 
-        }
-
-        /* Центрированный контейнер как в самом начале */
-        .app { 
-            width: 100%; max-width: 450px; background: var(--bg); 
-            display: flex; flex-direction: column; position: relative;
-            border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-        }
-
-        .screen { display: none; flex-direction: column; height: 100%; }
-        .active { display: flex; }
-
-        header { 
-            padding: 15px; background: var(--panel); 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border);
-        }
-
+        /* Экраны */
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
+        .active-screen { display: flex; }
+        header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: var(--panel); }
+        
         /* Список чатов */
-        #chat-list { flex: 1; overflow-y: auto; }
-        .chat-item { 
-            padding: 15px; border-bottom: 1px solid var(--border); 
-            display: flex; align-items: center; gap: 15px; cursor: pointer; 
-        }
-        .avatar { 
-            width: 45px; height: 45px; border-radius: 50%; background: var(--accent); 
-            display: flex; align-items: center; justify-content: center; font-weight: bold; 
-        }
+        .chat-list { flex: 1; overflow-y: auto; }
+        .chat-card { padding: 15px 20px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .chat-card:hover { background: #1c2128; }
+        .avatar { width: 48px; height: 48px; background: var(--accent); border-radius: 50%; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
         /* Сообщения */
-        #messages { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { 
-            max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; 
-            position: relative; line-height: 1.4;
-        }
-        .my { align-self: flex-end; background: #056162; }
-        .their { align-self: flex-start; background: #202c33; }
+        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #0d1117; }
+        .msg { max-width: 80%; padding: 10px 14px 22px 14px; border-radius: 18px; font-size: 15px; position: relative; min-width: 80px; word-wrap: break-word; }
+        .my { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+        .their { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .msg-time { position: absolute; bottom: 5px; right: 12px; font-size: 10px; opacity: 0.7; }
+        
+        /* Звонки */
+        #video-call-overlay { position: fixed; inset: 0; background: black; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        video { width: 90%; max-height: 40%; border-radius: 10px; background: #222; margin: 10px; }
+        .btn-call-end { background: #da3633; padding: 15px; border-radius: 50%; border: none; color: white; cursor: pointer; margin-top: 20px; width: 60px; height: 60px; }
 
-        /* Ввод */
-        .input-area { padding: 10px; background: var(--panel); display: flex; gap: 10px; }
-        input { 
-            flex: 1; background: var(--bg); border: 1px solid var(--border); 
-            padding: 10px; border-radius: 20px; color: #fff; outline: none; 
-        }
-
-        .fab {
-            position: absolute; bottom: 20px; right: 20px; width: 50px; height: 50px;
-            border-radius: 50%; background: var(--accent); display: flex;
-            align-items: center; justify-content: center; cursor: pointer;
-        }
+        /* Инструменты */
+        .footer { padding: 15px; display: flex; align-items: center; gap: 10px; background: var(--panel); border-top: 1px solid var(--border); }
+        .input-box { flex: 1; background: var(--bg); border: 1px solid var(--border); padding: 12px 18px; border-radius: 25px; color: white; outline: none; }
+        .icon-btn { font-size: 20px; color: var(--accent); cursor: pointer; padding: 5px; }
+        .fab { position: absolute; bottom: 85px; right: 25px; width: 60px; height: 60px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); z-index: 10; }
     </style>
 </head>
 <body>
 
-<div class="app">
-    <div id="scr-login" class="screen active" style="padding:40px; justify-content:center;">
-        <h1 style="text-align:center; color:var(--accent);">MilkyWay</h1>
-        <input type="email" id="email" placeholder="Email" style="margin-top:20px;">
-        <input type="password" id="pass" placeholder="Пароль" style="margin-top:10px;">
-        <button onclick="authOp('login')" style="margin-top:20px; padding:15px; background:var(--accent); border:none; border-radius:10px; color:#fff; font-weight:bold;">ВОЙТИ</button>
-        <p onclick="authOp('reg')" style="text-align:center; font-size:12px; margin-top:15px; opacity:0.5;">Регистрация</p>
+<div id="video-call-overlay">
+    <video id="remoteVideo" autoplay playsinline></video>
+    <video id="localVideo" autoplay playsinline muted style="width: 30%; position: absolute; bottom: 100px; right: 20px; border: 2px solid var(--accent);"></video>
+    <button class="btn-call-end" onclick="endCall()"><i class="fas fa-phone-slash"></i></button>
+</div>
+
+<div class="app-container">
+    <div id="sidebar" onclick="toggleMenu()">
+        <div class="sidebar-drawer" onclick="event.stopPropagation()">
+            <h2>Настройки</h2>
+            <div id="my-uid" onclick="copyUID()" style="background: var(--bg); padding: 12px; border-radius: 8px; font-size: 11px; cursor: pointer; border: 1px solid var(--border); word-break: break-all; margin: 20px 0;">...</div>
+            <button onclick="auth.signOut()" style="width: 100%; padding: 12px; background: #da3633; color: white; border: none; border-radius: 8px;">Выйти</button>
+        </div>
     </div>
 
-    <div id="scr-main" class="screen">
+    <div id="screen-auth" class="screen active-screen" style="justify-content: center; padding: 40px; text-align: center;">
+        <h1 style="color: var(--accent); font-size: 42px;">MilkyWay</h1>
+        <input type="email" id="email" class="input-box" style="margin-top:20px; width:100%;" placeholder="Email">
+        <input type="password" id="pass" class="input-box" style="margin-top:10px; width:100%;" placeholder="Пароль">
+        <button onclick="authOp('login')" style="width:100%; padding:14px; background:var(--accent); border:none; border-radius:12px; color:white; margin-top:20px; font-weight:bold;">Войти</button>
+        <p onclick="authOp('reg')" style="margin-top:20px; color:#8b949e; cursor:pointer;">Создать аккаунт</p>
+    </div>
+
+    <div id="screen-main" class="screen">
         <header>
+            <i class="fas fa-bars" onclick="toggleMenu()" style="cursor:pointer"></i>
             <b>Чаты</b>
-            <i class="fas fa-sign-out-alt" onclick="auth.signOut()"></i>
+            <i class="fas fa-search" onclick="newChat()" style="cursor:pointer"></i>
         </header>
-        <div id="chat-list"></div>
-        <div class="fab" onclick="addUser()"><i class="fas fa-plus"></i></div>
+        <div id="chat-list-dynamic" class="chat-list"></div>
+        <div class="fab" onclick="newChat()"><i class="fas fa-plus"></i></div>
     </div>
 
-    <div id="scr-chat" class="screen">
+    <div id="screen-chat" class="screen">
         <header>
             <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fas fa-arrow-left" onclick="show('scr-main')"></i>
-                <div id="chat-title" style="font-weight:bold;">Чат</div>
+                <i class="fas fa-arrow-left" onclick="showScreen('screen-main')" style="cursor:pointer"></i>
+                <span id="chat-title">Чат</span>
+            </div>
+            <div style="display:flex; gap:15px;">
+                <i class="fas fa-phone icon-btn" onclick="startCall('audio')"></i>
+                <i class="fas fa-video icon-btn" onclick="startCall('video')"></i>
             </div>
         </header>
         <div id="messages"></div>
-        <div class="input-area">
-            <input type="text" id="m-input" placeholder="Сообщение...">
-            <button onclick="send()" style="background:none; border:none; color:var(--accent); font-size:20px;"><i class="fas fa-paper-plane"></i></button>
+        <div class="footer">
+            <label for="file-input"><i class="fas fa-paperclip icon-btn"></i></label>
+            <input type="file" id="file-input" style="display:none" onchange="uploadFile(this)">
+            <input type="text" id="msg-input" class="input-box" placeholder="Сообщение...">
+            <button class="btn-send" onclick="send()" style="background:none; border:none"><i class="fas fa-paper-plane icon-btn"></i></button>
         </div>
     </div>
 </div>
@@ -121,77 +120,126 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database();
-    let user = null, chatId = null;
-
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+    const auth = firebase.auth(), db = firebase.database(), storage = firebase.storage();
+    let user = null, activeChat = '', localStream = null;
 
     function authOp(type) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(type === 'login') auth.signInWithEmailAndPassword(e,p).catch(a => alert(a.message));
+        if(type === 'login') auth.signInWithEmailAndPassword(e,p).catch(err => alert(err.message));
         else auth.createUserWithEmailAndPassword(e,p).then(u => {
-            db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
-            db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
-        });
+            db.ref('users_by_email/' + btoa(e).replace(/=/g, "")).set(u.user.uid);
+        }).catch(err => alert(err.message));
     }
 
     auth.onAuthStateChanged(u => {
-        if(u) { user = u; show('scr-main'); loadChats(); }
-        else show('scr-login');
+        if(u) { user = u; document.getElementById('my-uid').innerText = u.uid; showScreen('screen-main'); loadContacts(); }
+        else { showScreen('screen-auth'); }
     });
 
-    function loadChats() {
-        const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-item" onclick="openChat('global','Общий чат')"><div class="avatar">G</div><b>Общий чат</b></div>`;
-        db.ref('users/'+user.uid+'/contacts').on('value', s => {
-            s.forEach(c => {
-                db.ref('users/'+c.key).once('value', uS => {
-                    const ud = uS.val();
-                    const div = document.createElement('div');
-                    div.className = 'chat-item';
-                    div.onclick = () => openChat(c.key, ud.name);
-                    div.innerHTML = `<div class="avatar">${ud.name[0].toUpperCase()}</div><b>${ud.name}</b>`;
-                    list.appendChild(div);
-                });
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+        document.getElementById(id).classList.add('active-screen');
+    }
+
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); }
+
+    function loadContacts() {
+        db.ref('users/' + user.uid + '/contacts').on('value', snap => {
+            const list = document.getElementById('chat-list-dynamic');
+            list.innerHTML = '';
+            snap.forEach(child => {
+                const cid = child.key;
+                const div = document.createElement('div');
+                div.className = 'chat-card';
+                div.onclick = () => openChat([user.uid, cid].sort().join("_"), "Пилот " + cid.substring(0,5));
+                div.innerHTML = `<div class="avatar">${cid[0].toUpperCase()}</div><div><b>Пилот ${cid.substring(0,5)}</b></div>`;
+                list.appendChild(div);
             });
         });
     }
 
+    function newChat() {
+        const input = prompt("Email или UID:");
+        if(!input) return;
+        if(input.includes('@')) {
+            db.ref('users_by_email/' + btoa(input).replace(/=/g, "")).once('value', s => {
+                if(s.exists()) startChat(s.val());
+                else alert("Не найден");
+            });
+        } else startChat(input);
+    }
+
+    function startChat(id) {
+        if(id === user.uid) return;
+        db.ref('users/' + user.uid + '/contacts/' + id).set(true);
+        openChat([user.uid, id].sort().join("_"), "Пилот " + id.substring(0,5));
+    }
+
     function openChat(id, name) {
-        chatId = id === 'global' ? 'global' : [user.uid, id].sort().join("_");
+        activeChat = id; 
         document.getElementById('chat-title').innerText = name;
-        show('scr-chat');
-        db.ref('msgs/'+chatId).off();
-        const area = document.getElementById('messages');
-        area.innerHTML = '';
-        db.ref('msgs/'+chatId).on('child_added', s => {
+        showScreen('screen-chat');
+        listen(id);
+    }
+
+    function send(fileUrl = null, fileType = 'text') {
+        const t = document.getElementById('msg-input').value.trim();
+        if(!t && !fileUrl) return;
+        db.ref('chats/'+activeChat).push({
+            u: user.uid,
+            t: fileUrl ? fileUrl : t,
+            type: fileType,
+            time: firebase.database.ServerValue.TIMESTAMP
+        });
+        document.getElementById('msg-input').value = '';
+    }
+
+    function uploadFile(input) {
+        const file = input.files[0];
+        if(!file) return;
+        const ref = storage.ref(`uploads/${activeChat}/${Date.now()}_${file.name}`);
+        ref.put(file).then(snap => snap.ref.getDownloadURL()).then(url => {
+            send(url, file.type.startsWith('image') ? 'image' : 'file');
+        });
+    }
+
+    function listen(id) {
+        const m = document.getElementById('messages');
+        db.ref('chats/'+id).off(); m.innerHTML = '';
+        db.ref('chats/'+id).limitToLast(50).on('child_added', s => {
             const d = s.val();
             const div = document.createElement('div');
-            div.className = `msg ${d.from === user.uid ? 'my' : 'their'}`;
-            div.innerText = d.txt;
-            area.appendChild(div);
-            area.scrollTop = area.scrollHeight;
+            div.className = 'msg ' + (d.u === user.uid ? 'my' : 'their');
+            
+            if(d.type === 'image') div.innerHTML = `<img src="${d.t}" style="max-width:100%; border-radius:10px; cursor:pointer" onclick="window.open('${d.t}')">`;
+            else if(d.type === 'file') div.innerHTML = `<a href="${d.t}" target="_blank" style="color:white; text-decoration:none"><i class="fas fa-file"></i> Документ</a>`;
+            else {
+                const span = document.createElement('span');
+                span.innerText = d.t;
+                div.appendChild(span);
+            }
+            
+            div.innerHTML += `<span class="msg-time">${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>`;
+            m.appendChild(div);
+            m.scrollTop = m.scrollHeight;
         });
     }
 
-    function send() {
-        const i = document.getElementById('m-input');
-        if(!i.value) return;
-        db.ref('msgs/'+chatId).push({from: user.uid, txt: i.value, time: Date.now()});
-        i.value = '';
+    async function startCall(type) {
+        document.getElementById('video-call-overlay').style.display = 'flex';
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: type === 'video' });
+            document.getElementById('localVideo').srcObject = localStream;
+        } catch(e) { alert("Нет доступа к камере/микрофону"); endCall(); }
     }
 
-    function addUser() {
-        const e = prompt("Email:");
-        if(e) db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).once('value', s => {
-            if(s.exists()) db.ref('users/'+user.uid+'/contacts/'+s.val()).set(true);
-        });
+    function endCall() {
+        if(localStream) localStream.getTracks().forEach(t => t.stop());
+        document.getElementById('video-call-overlay').style.display = 'none';
     }
 
-    document.getElementById('m-input').onkeypress = e => { if(e.key==='Enter') send(); };
+    function copyUID() { navigator.clipboard.writeText(user.uid); alert("ID скопирован!"); }
+    document.getElementById('msg-input').onkeypress = (e) => { if(e.key==='Enter') send(); };
 </script>
 </body>
 </html>
