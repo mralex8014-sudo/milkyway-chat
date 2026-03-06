@@ -2,185 +2,94 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>MilkyWay Ghost</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MilkyWay Original</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root {
-            --space-bg: #030508;
-            --accent: #00d2ff;
-            --nebula: #6c5ce7;
-            --glass: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.15);
-        }
+        :root { --bg: #0b141a; --header: #202c33; --panel: #111b21; --accent: #00af9c; --my-msg: #005c4b; --his-msg: #202c33; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #000; color: #e9edef; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--space-bg); color: #fff; height: 100dvh; overflow: hidden; display: flex; justify-content: center; }
+        /* Контейнер приложения */
+        .app-frame { width: 100%; max-width: 400px; height: 100vh; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        @media (min-height: 700px) { .app-frame { height: 650px; border-radius: 15px; border: 1px solid #2a3942; } }
 
-        .app-container {
-            width: 100%; max-width: 500px; height: 100dvh; position: relative;
-            background: #05070c; display: flex; flex-direction: column;
-            border-left: 1px solid var(--border); border-right: 1px solid var(--border);
-            overflow: hidden; /* Важно: предотвращает сдвиги */
-        }
+        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; left: 0; background: var(--panel); }
+        .active { display: flex; z-index: 10; }
 
-        /* --- ЛОГО И КОМЕТА --- */
-        .logo-box { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .logo-emblem { 
-            width: 45px; height: 45px; background: linear-gradient(45deg, var(--accent), var(--nebula));
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 20px var(--accent); animation: comet-flicker 2s infinite alternate; font-size: 20px;
-        }
-        @keyframes comet-flicker {
-            0% { box-shadow: 0 0 10px var(--accent); transform: scale(1); }
-            100% { box-shadow: 0 0 25px var(--nebula); transform: scale(1.05); }
-        }
-        .logo-text { font-size: 24px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase; }
+        /* HEADER */
+        .header { background: var(--header); padding: 10px 16px; display: flex; align-items: center; gap: 15px; min-height: 60px; z-index: 5; }
+        .header h2 { font-size: 18px; flex: 1; }
+        .avatar { width: 40px; height: 40px; background: #394145; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; font-size: 20px; }
+        .online-status { width: 12px; height: 12px; background: var(--accent); border: 2px solid var(--header); border-radius: 50%; position: absolute; bottom: 0; right: 0; }
 
-        /* --- ЭКРАНЫ --- */
-        .screen { display: none; flex-direction: column; height: 100%; width: 100%; position: absolute; top: 0; background: inherit; z-index: 10; }
-        .active { display: flex; }
+        /* СПИСОК КОНТАКТОВ */
+        .list { flex: 1; overflow-y: auto; background: var(--bg); }
+        .user-card { padding: 12px 16px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #222d34; cursor: pointer; transition: 0.2s; }
+        .user-card:hover { background: #2a3942; }
+        .user-info { flex: 1; border-bottom: none; }
+        .user-name { font-weight: 500; font-size: 16px; display: flex; justify-content: space-between; }
+        .last-msg { font-size: 13px; color: #8696a0; margin-top: 2px; }
 
-        /* --- ШАПКА --- */
-        .header { padding: 15px 20px; background: rgba(10, 15, 25, 0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 50; }
-        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        /* ОКНО ЧАТА */
+        #chat-screen { transform: translateX(100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; background: var(--bg); }
+        #chat-screen.open { transform: translateX(0); }
+        .chat-body { flex: 1; overflow-y: auto; padding: 15px; background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png'); background-repeat: repeat; display: flex; flex-direction: column; gap: 4px; }
+        
+        /* ПУЗЫРИ СООБЩЕНИЙ */
+        .msg { padding: 6px 10px; border-radius: 8px; max-width: 85%; font-size: 14.5px; position: relative; color: #e9edef; box-shadow: 0 1px 1px rgba(0,0,0,0.2); }
+        .msg.me { background: var(--my-msg); align-self: flex-end; border-top-right-radius: 2px; }
+        .msg.he { background: var(--his-msg); align-self: flex-start; border-top-left-radius: 2px; }
+        .msg-meta { font-size: 11px; color: rgba(255,255,255,0.6); float: right; margin: 4px -4px -2px 8px; display: flex; align-items: center; gap: 3px; }
 
-        /* --- ПОИСК --- */
-        .search-container { background: var(--glass); border-radius: 12px; padding: 10px 15px; display: flex; align-items: center; border: 1px solid var(--border); }
-        .search-container input { background: none; border: none; color: #fff; flex: 1; outline: none; margin-left: 10px; font-size: 14px; }
+        .input-area { background: var(--header); padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+        .input-area input { flex: 1; background: #2a3942; border: none; padding: 10px 15px; border-radius: 20px; color: white; outline: none; font-size: 15px; }
+        .send-btn { color: var(--accent); font-size: 22px; cursor: pointer; }
 
-        /* --- НАВИГАЦИЯ (ФИКСИРОВАННАЯ) --- */
-        .bottom-nav {
-            height: 75px; background: #080a0f; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; align-items: center;
-            position: absolute; bottom: 0; width: 100%; z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
-        }
-        .nav-tab { display: flex; flex-direction: column; align-items: center; color: #8696a0; flex: 1; gap: 4px; cursor: pointer; transition: 0.2s; }
-        .nav-tab.active { color: var(--accent); text-shadow: 0 0 10px rgba(0,210,255,0.3); }
-
-        /* --- КОНТЕНТНЫЕ СЕКЦИИ --- */
-        .scroller { flex: 1; overflow-y: auto; padding-bottom: 90px; }
-        .empty-placeholder { padding: 60px 30px; text-align: center; color: #8696a0; font-size: 14px; }
-
-        /* --- ПРОФИЛЬ --- */
-        #scr-settings { z-index: 200; }
-        .profile-scroll { flex: 1; overflow-y: auto; padding: 25px; padding-bottom: 100px; }
-        .ava-giant { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--accent); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; background: #1a1f2b; font-size: 40px; overflow: hidden; }
-        .ava-giant img { width: 100%; height: 100%; object-fit: cover; }
-        .cosmo-input { width: 100%; padding: 14px; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; color: #fff; margin-bottom: 15px; outline: none; }
-
-        /* --- ЧАТ (ВЫЕЗД СПРАВА) --- */
-        #scr-chat { z-index: 1000; transform: translateX(100%); transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: #000; }
-        #scr-chat.open { transform: translateX(0); }
-        .chat-wallpaper { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: url('https://w0.peakpx.com/wallpaper/596/633/HD-wallpaper-whatsapp-dark-space-background.jpg') center/cover; }
-        .bubble { padding: 12px 16px; border-radius: 18px; max-width: 80%; }
-        .msg-me { background: var(--nebula); align-self: flex-end; border-bottom-right-radius: 4px; }
-        .msg-he { background: rgba(30, 39, 46, 0.95); align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid var(--border); }
-
-        .ava-small { width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--accent); overflow: hidden; display: flex; align-items: center; justify-content: center; background: #1a1f2b; flex-shrink: 0; }
-        .ava-small i { color: var(--accent); }
-        .ava-small img { width: 100%; height: 100%; object-fit: cover; }
+        /* AUTH SCREEN */
+        .auth-screen { padding: 40px 30px; text-align: center; justify-content: center; }
+        .auth-input { width: 100%; background: #2a3942; border: 1px solid #3b4a54; padding: 15px; border-radius: 10px; color: white; margin-bottom: 12px; outline: none; }
+        .auth-btn { width: 100%; padding: 15px; background: #008069; border: none; border-radius: 10px; color: white; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <div id="scr-auth" class="screen active" style="justify-content:center; padding:40px;">
-        <div class="logo-box" style="margin-bottom:40px;">
-            <div class="logo-emblem"><i class="fas fa-meteor"></i></div>
-            <span class="logo-text">MilkyWay</span>
-        </div>
-        <input type="email" id="email" class="cosmo-input" placeholder="Email">
-        <input type="password" id="pass" class="cosmo-input" placeholder="Пароль">
-        <button onclick="authRun()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">ВОЙТИ</button>
+<div class="app-frame">
+    <div id="scr-auth" class="screen active auth-screen">
+        <h1 style="color:var(--accent); margin-bottom:10px;">MilkyWay</h1>
+        <p style="color:#8696a0; margin-bottom:30px; font-size:14px;">Мессенджер нового поколения</p>
+        <input type="email" id="email" class="auth-input" placeholder="Введите Email">
+        <input type="password" id="pass" class="auth-input" placeholder="Введите Пароль">
+        <button class="auth-btn" onclick="authAction(true)">ВОЙТИ</button>
+        <button onclick="authAction(false)" style="background:none; border:none; color:var(--accent); margin-top:20px; font-weight:600; cursor:pointer;">Создать аккаунт</button>
     </div>
 
     <div id="scr-main" class="screen">
         <div class="header">
-            <div class="header-top">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div class="logo-emblem" style="width:32px; height:32px; font-size:14px;"><i class="fas fa-meteor"></i></div>
-                    <span class="logo-text" style="font-size:18px;">MilkyWay</span>
-                </div>
-                <i class="fas fa-cog" style="color:#8696a0; font-size:20px; cursor:pointer;" onclick="showSettings()"></i>
-            </div>
-            <div class="search-container">
-                <i class="fas fa-search" style="color:#8696a0;"></i>
-                <input type="text" id="globalSearch" placeholder="Поиск по ID, Email или Телефону" oninput="runGlobalSearch()">
-            </div>
+            <div class="avatar">👤</div>
+            <h2>Чаты</h2>
+            <i class="fas fa-sign-out-alt" style="color:#8696a0; cursor:pointer;" onclick="auth.signOut()"></i>
         </div>
-
-        <div id="sect-chats" class="scroller">
-            <div id="list-target">
-                <div class="empty-placeholder">
-                    <i class="fas fa-satellite fa-2x" style="margin-bottom:15px; color:var(--accent);"></i>
-                    <p>Найдите пилотов через поиск выше, чтобы начать общение</p>
-                </div>
-            </div>
-        </div>
-        
-        <div id="sect-status" class="scroller" style="display:none; text-align:center; padding:50px 20px;">
-            <i class="fas fa-spinner fa-spin fa-2x" style="color:var(--accent);"></i>
-            <p style="margin-top:20px; color:#8696a0;">Статусы обновляются...</p>
-        </div>
-
-        <div id="sect-calls" class="scroller" style="display:none; text-align:center; padding:50px 20px;">
-            <i class="fas fa-phone-slash fa-2x" style="color:var(--nebula);"></i>
-            <p style="margin-top:20px; color:#8696a0;">Вызовов не обнаружено</p>
-        </div>
-
-        <nav class="bottom-nav">
-            <div class="nav-tab active" onclick="switchTab('chats', this)"><i class="fas fa-comment-alt"></i><span>Чаты</span></div>
-            <div class="nav-tab" onclick="switchTab('status', this)"><i class="fas fa-star"></i><span>Статус</span></div>
-            <div class="nav-tab" onclick="switchTab('calls', this)"><i class="fas fa-phone-alt"></i><span>Звонки</span></div>
-        </nav>
+        <div class="list" id="contact-list"></div>
     </div>
 
-    <div id="scr-settings" class="screen">
+    <div id="chat-screen" class="screen">
         <div class="header">
-            <div style="display:flex; align-items:center; gap:15px;">
-                <i class="fas fa-arrow-left" onclick="hideSettings()" style="color:var(--accent); cursor:pointer; font-size:20px;"></i>
-                <span class="logo-text" style="font-size:18px;">Профиль</span>
-            </div>
-        </div>
-        <div class="profile-scroll">
-            <div class="ava-giant" id="my-ava-prev"><i class="fas fa-user-astronaut"></i></div>
-            <center><button onclick="document.getElementById('file-up').click()" style="background:none; border:1px solid var(--accent); color:var(--accent); padding:5px 15px; border-radius:20px; font-size:12px; margin-bottom:25px;">Сменить фото</button></center>
-            <input type="file" id="file-up" hidden onchange="uploadAva(this)">
-            
-            <label style="color:var(--accent); font-size:12px;">ID ПИЛОТА</label>
-            <input type="text" id="set-pilot-id" class="cosmo-input" placeholder="@gagarin">
-            <label style="color:var(--accent); font-size:12px;">ПОЗЫВНОЙ</label>
-            <input type="text" id="set-name" class="cosmo-input">
-            <label style="color:var(--accent); font-size:12px;">ДАТА РОЖДЕНИЯ</label>
-            <input type="date" id="set-birth" class="cosmo-input">
-            <button onclick="saveProfile()" style="width:100%; padding:15px; background:var(--accent); border:none; border-radius:12px; font-weight:bold; color:#000;">СОХРАНИТЬ</button>
-            <button onclick="auth.signOut()" style="width:100%; background:none; color:#ff4757; border:none; margin-top:30px;">ВЫЙТИ</button>
-        </div>
-    </div>
-
-    <div id="scr-chat" class="screen">
-        <div class="header" style="display:flex; align-items:center; gap:12px; height:70px;">
-            <i class="fas fa-arrow-left" style="color:var(--accent); font-size:22px; cursor:pointer;" onclick="closeChat()"></i>
-            <div id="c-ava" class="ava-small"></div>
+            <i class="fas fa-arrow-left" style="cursor:pointer;" onclick="closeChat()"></i>
+            <div class="avatar" style="width:35px; height:35px; font-size:16px;">👤</div>
             <div style="flex:1">
-                <b id="c-name" style="font-size:16px;">Пилот</b><br>
-                <small id="c-status" style="color:var(--accent); font-size:11px;">в сети</small>
-            </div>
-            <div style="display:flex; gap:15px; color:var(--accent); font-size:18px;">
-                <i class="fas fa-phone"></i>
-                <i class="fas fa-video"></i>
+                <div id="chat-title" style="font-weight:600; font-size:16px;">Чат</div>
+                <div id="chat-sub" style="font-size:12px; color:#8696a0;">в сети</div>
             </div>
         </div>
-        <div id="chat-box" class="chat-wallpaper"></div>
-        <div style="padding:15px; background:#0a0f19; display:flex; gap:10px; align-items:center; border-top:1px solid var(--border);">
-            <i class="fas fa-paperclip" style="color:var(--accent); font-size:20px;"></i>
-            <input type="text" id="msg-input" class="cosmo-input" style="margin:0; border-radius:30px;" placeholder="Связь...">
-            <button onclick="sendText()" style="width:45px; height:45px; border-radius:50%; background:var(--accent); border:none; color:#000;"><i class="fas fa-paper-plane"></i></button>
+        <div class="chat-body" id="msg-box"></div>
+        <div class="input-area">
+            <i class="far fa-smile" style="color:#8696a0; font-size:22px;"></i>
+            <input type="text" id="m-input" placeholder="Сообщение" oninput="typingStatus(true)">
+            <i class="fas fa-paper-plane send-btn" onclick="sendMsg()"></i>
         </div>
     </div>
 </div>
@@ -197,121 +106,107 @@
     };
     firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    let myId = null, selId = null;
+    let currentId = null, tOut;
 
-    // --- ФИКСИРОВАННАЯ НАВИГАЦИЯ ---
-    function switchTab(id, el) {
-        ['chats','status','calls'].forEach(t => document.getElementById('sect-'+t).style.display = 'none');
-        document.getElementById('sect-'+id).style.display = 'block'; // Никаких сдвигов, только отображение
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-    }
-
-    function showSettings() { document.getElementById('scr-settings').classList.add('active'); }
-    function hideSettings() { document.getElementById('scr-settings').classList.remove('active'); }
-
-    // --- AUTH ---
-    async function authRun() {
+    // --- ЛОГИКА ВХОДА ---
+    async function authAction(isLogin) {
         const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        try { await auth.signInWithEmailAndPassword(e, p); } 
-        catch { 
-            const res = await auth.createUserWithEmailAndPassword(e, p);
-            await db.ref('users/' + res.user.uid).set({ name: e.split('@')[0], email: e, pilotId: 'pilot' + Math.floor(Math.random()*1000) });
-        }
+        if(!e || !p) return alert("Заполните все поля");
+        try {
+            if(isLogin) await auth.signInWithEmailAndPassword(e, p);
+            else {
+                const r = await auth.createUserWithEmailAndPassword(e, p);
+                await db.ref('users/' + r.user.uid).set({ 
+                    name: e.split('@')[0], 
+                    email: e, 
+                    status: 'online', 
+                    lastSeen: Date.now() 
+                });
+            }
+        } catch(err) { alert(err.message); }
     }
 
-    auth.onAuthStateChanged(u => {
-        document.getElementById('scr-auth').classList.toggle('active', !u);
-        document.getElementById('scr-main').classList.toggle('active', !!u);
-        if(u) {
-            myId = u.uid;
-            db.ref('users/' + u.uid).on('value', snap => {
-                const d = snap.val();
-                if(d) {
-                    document.getElementById('set-name').value = d.name || '';
-                    document.getElementById('set-pilot-id').value = d.pilotId || '';
-                    document.getElementById('set-birth').value = d.birth || '';
-                    if(d.ava) document.getElementById('my-ava-prev').innerHTML = `<img src="${d.ava}">`;
-                }
-            });
+    auth.onAuthStateChanged(user => {
+        document.getElementById('scr-auth').classList.toggle('active', !user);
+        document.getElementById('scr-main').classList.toggle('active', !!user);
+        if(user) {
+            db.ref('users/' + user.uid + '/status').set('online');
+            db.ref('users/' + user.uid + '/status').onDisconnect().set('offline');
+            renderContacts();
         }
     });
 
-    // --- ПРИВАТНЫЙ ПОИСК (ГЛАВНАЯ ПРАВКА) ---
-    function runGlobalSearch() {
-        const q = document.getElementById('globalSearch').value.toLowerCase().trim();
-        const list = document.getElementById('list-target');
-        
-        if (q.length < 3) {
-            list.innerHTML = `<div class="empty-placeholder"><i class="fas fa-satellite fa-2x" style="margin-bottom:15px; color:var(--accent);"></i><p>Введите минимум 3 символа для поиска пилота</p></div>`;
-            return;
-        }
-
-        db.ref('users').once('value', snap => {
-            let found = false;
-            let html = '';
+    // --- СПИСОК КОНТАКТОВ ---
+    function renderContacts() {
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('contact-list');
+            list.innerHTML = '';
             snap.forEach(u => {
-                const d = u.val();
-                if (u.key !== myId && (
-                    (d.name || '').toLowerCase().includes(q) ||
-                    (d.email || '').toLowerCase().includes(q) ||
-                    (d.pilotId || '').toLowerCase().includes(q) ||
-                    (d.phone || '').includes(q)
-                )) {
-                    found = true;
-                    html += `
-                    <div style="padding:15px 20px; display:flex; align-items:center; gap:15px; border-bottom:1px solid var(--border);" onclick="openChat('${u.key}','${d.name}','${d.ava}')">
-                        <div class="ava-small">${d.ava ? `<img src="${d.ava}">` : `<i class="fas fa-user-astronaut"></i>`}</div>
-                        <div><b>${d.name}</b><br><small style="color:#8696a0">${d.pilotId || '@pilot'}</small></div>
-                    </div>`;
+                if(u.key !== auth.currentUser.uid) {
+                    const d = u.val();
+                    const name = d.name || d.email || "Пользователь";
+                    const isOnline = d.status === 'online';
+                    list.innerHTML += `
+                        <div class="user-card" onclick="openChat('${u.key}','${name}')">
+                            <div class="avatar">👤 ${isOnline?'<div class="online-status"></div>':''}</div>
+                            <div class="user-info">
+                                <div class="user-name"><span>${name}</span><span style="font-size:11px; color:#8696a0">12:00</span></div>
+                                <div class="last-msg">${isOnline ? 'в сети' : 'был недавно'}</div>
+                            </div>
+                        </div>`;
                 }
             });
-            list.innerHTML = found ? html : `<div class="empty-placeholder"><p>Пилот не найден в базе данных Галактики</p></div>`;
         });
     }
 
     // --- ЧАТ ---
-    function openChat(id, name, ava) {
-        selId = id;
-        document.getElementById('c-name').innerText = name;
-        document.getElementById('c-ava').innerHTML = ava ? `<img src="${ava}">` : `<i class="fas fa-user-astronaut"></i>`;
-        document.getElementById('scr-chat').classList.add('open', 'active');
-        const cid = [myId, id].sort().join('_');
-        db.ref('msgs/' + cid).off();
-        db.ref('msgs/' + cid).on('value', snap => {
-            const box = document.getElementById('chat-box'); box.innerHTML = '';
+    function openChat(id, name) {
+        currentId = id;
+        document.getElementById('chat-title').innerText = name;
+        document.getElementById('chat-screen').classList.add('open', 'active');
+        const chatId = [auth.currentUser.uid, id].sort().join('_');
+        
+        db.ref('msgs/' + chatId).on('value', snap => {
+            const box = document.getElementById('msg-box');
+            box.innerHTML = '';
             snap.forEach(m => {
-                const d = m.val();
-                box.innerHTML += `<div class="bubble ${d.f===myId?'msg-me':'msg-he'}">${d.x}</div>`;
+                const data = m.val();
+                const isMe = data.f === auth.currentUser.uid;
+                const time = new Date(data.t).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                box.innerHTML += `
+                    <div class="msg ${isMe?'me':'he'}">
+                        ${data.txt}
+                        <div class="msg-meta">${time} ${isMe?'<i class="fas fa-check-double" style="color:#53bdeb"></i>':''}</div>
+                    </div>`;
             });
             box.scrollTop = box.scrollHeight;
+        });
+
+        // Слушаем статус "Печатает"
+        db.ref('typing/' + id + '/' + auth.currentUser.uid).on('value', s => {
+            document.getElementById('chat-sub').innerText = s.val() ? 'печатает...' : 'в сети';
         });
     }
 
     function closeChat() { 
-        document.getElementById('scr-chat').classList.remove('open');
-        setTimeout(() => document.getElementById('scr-chat').classList.remove('active'), 350);
+        document.getElementById('chat-screen').classList.remove('open'); 
+        setTimeout(() => document.getElementById('chat-screen').classList.remove('active'), 300);
     }
 
-    function sendText() {
-        const inp = document.getElementById('msg-input'); if(!inp.value.trim()) return;
-        const cid = [myId, selId].sort().join('_');
-        db.ref('msgs/' + cid).push({ f: myId, x: inp.value, t: Date.now() });
+    function sendMsg() {
+        const inp = document.getElementById('m-input');
+        if(!inp.value.trim()) return;
+        const chatId = [auth.currentUser.uid, currentId].sort().join('_');
+        db.ref('msgs/' + chatId).push({ f: auth.currentUser.uid, txt: inp.value, t: Date.now() });
         inp.value = '';
+        typingStatus(false);
     }
 
-    function saveProfile() {
-        db.ref('users/' + myId).update({
-            name: document.getElementById('set-name').value,
-            pilotId: document.getElementById('set-pilot-id').value,
-            birth: document.getElementById('set-birth').value
-        }).then(() => { alert("Данные обновлены!"); hideSettings(); });
-    }
-
-    function uploadAva(input) {
-        const r = new FileReader();
-        r.onload = e => db.ref('users/' + myId).update({ ava: e.target.result });
-        r.readAsDataURL(input.files[0]);
+    function typingStatus(val) {
+        if(!currentId) return;
+        db.ref('typing/' + auth.currentUser.uid + '/' + currentId).set(val);
+        clearTimeout(tOut);
+        if(val) tOut = setTimeout(() => typingStatus(false), 2000);
     }
 </script>
 </body>
