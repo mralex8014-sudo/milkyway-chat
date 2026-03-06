@@ -3,66 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MilkyWay</title>
+    <title>MilkyWay Ultra</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --accent: #00a2ff; --bg: #0b0e14; --panel: #161b22; --text: #e6edf3; --border: #30363d; }
-        body { margin: 0; background: #000; color: var(--text); font-family: sans-serif; display: flex; justify-content: center; height: 100vh; }
+        * { box-sizing: border-box; }
+        body { background: #0b0e14; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         
-        .app { width: 100%; max-width: 450px; background: var(--bg); display: flex; flex-direction: column; border: 1px solid var(--border); }
-        .screen { display: none; flex-direction: column; height: 100%; }
+        /* ГЛАВНЫЙ КОНТЕЙНЕР */
+        .app-container { 
+            width: 360px; height: 640px; background: #141923; 
+            border: 1px solid #1f2a3d; border-radius: 25px; 
+            display: flex; flex-direction: column; overflow: hidden; 
+            box-shadow: 0 0 50px rgba(0, 162, 255, 0.15); position: relative;
+        }
+
+        .screen { display: none; width: 100%; height: 100%; flex-direction: column; }
         .active { display: flex; }
 
-        header { padding: 15px; background: var(--panel); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        
-        #chat-list, #messages { flex: 1; overflow-y: auto; padding: 10px; }
-        
-        .chat-item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; cursor: pointer; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        /* ДИЗАЙН ВХОДА */
+        .auth-content { padding: 40px 25px; text-align: center; justify-content: center; height: 100%; display: flex; flex-direction: column; }
+        .logo { font-size: 32px; font-weight: bold; color: #00a2ff; margin-bottom: 40px; text-shadow: 0 0 15px rgba(0, 162, 255, 0.5); }
+        input { width: 100%; background: #1c222d; border: 1px solid #30363d; padding: 15px; border-radius: 12px; color: white; margin-bottom: 12px; outline: none; text-align: center; }
+        button { width: 100%; background: #00a2ff; border: none; color: white; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #0081cc; box-shadow: 0 0 15px rgba(0, 162, 255, 0.3); }
 
-        .msg { max-width: 80%; padding: 10px; border-radius: 10px; margin-bottom: 8px; line-height: 1.4; }
-        .my { align-self: flex-end; background: #056162; }
-        .their { align-self: flex-start; background: #202c33; }
+        /* ИНТЕРФЕЙС ЧАТОВ */
+        header { padding: 15px; border-bottom: 1px solid #1f2a3d; display: flex; justify-content: space-between; align-items: center; background: #1a202c; }
+        header h2 { margin: 0; font-size: 18px; color: #00a2ff; }
+        .user-list { flex: 1; overflow-y: auto; }
+        .user-item { padding: 15px; border-bottom: 1px solid #1c222d; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
+        .user-item:hover { background: #1c222d; }
+        .user-item i { color: #00a2ff; font-size: 20px; }
 
-        .input-area { padding: 10px; background: var(--panel); display: flex; gap: 10px; }
-        input { flex: 1; background: #000; border: 1px solid var(--border); padding: 10px; border-radius: 5px; color: #fff; outline: none; }
-        
-        .btn-main { width: 100%; padding: 12px; background: var(--accent); border: none; color: #fff; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        /* ОКНО ПЕРЕПИСКИ */
+        #chat-window { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #141923; transition: 0.3s; z-index: 10; display: flex; flex-direction: column; }
+        #chat-window.open { left: 0; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 80%; font-size: 14px; }
+        .msg.me { background: #00a2ff; align-self: flex-end; color: white; }
+        .msg.them { background: #1c222d; align-self: flex-start; }
+        .chat-input { padding: 15px; display: flex; gap: 10px; background: #1a202c; }
+
+        .btn-exit { background: #ff4b4b; padding: 8px 15px; font-size: 12px; width: auto; }
     </style>
 </head>
 <body>
 
-<div class="app">
-    <div id="scr-login" class="screen active" style="padding:40px; justify-content:center; gap:10px;">
-        <h1 style="text-align:center; color:var(--accent); margin-bottom:20px;">MilkyWay</h1>
-        <input type="email" id="email" placeholder="Email">
-        <input type="password" id="pass" placeholder="Пароль">
-        <button class="btn-main" onclick="authOp('login')">ВОЙТИ</button>
-        <button onclick="authOp('reg')" style="background:none; border:none; color:var(--accent); cursor:pointer;">Регистрация</button>
+<div class="app-container">
+    <div id="scr-auth" class="screen active">
+        <div class="auth-content">
+            <div class="logo">MilkyWay</div>
+            <input type="email" id="email" placeholder="Email (например mr.alex8014@gmail.com)">
+            <input type="password" id="pass" placeholder="Пароль">
+            <button onclick="handleAuth(true)">ВОЙТИ</button>
+            <button onclick="handleAuth(false)" style="background:none; color:#888; font-size:13px; text-decoration:underline; margin-top:10px;">Создать аккаунт</button>
+        </div>
     </div>
 
     <div id="scr-main" class="screen">
         <header>
-            <b>Чаты</b>
-            <i class="fas fa-sign-out-alt" style="cursor:pointer;" onclick="auth.signOut()"></i>
+            <h2>Чаты</h2>
+            <button class="btn-exit" onclick="auth.signOut()">ВЫЙТИ</button>
         </header>
-        <div id="chat-list"></div>
-        <button class="btn-main" onclick="addUser()" style="border-radius:0;">+ Добавить пилота</button>
+        <div class="user-list" id="user-list"></div>
     </div>
 
-    <div id="scr-chat" class="screen">
+    <div id="chat-window">
         <header>
-            <i class="fas fa-arrow-left" style="cursor:pointer;" onclick="show('scr-main')"></i>
-            <b id="chat-title">Чат</b>
-            <div style="width:20px;"></div>
+            <button onclick="closeChat()" style="width:auto; padding:5px 10px; background:#1c222d;"><i class="fas fa-arrow-left"></i></button>
+            <h2 id="chat-with-name">Чат</h2>
+            <div style="width:40px;"></div>
         </header>
-        <div id="messages" style="display:flex; flex-direction:column;"></div>
-        <div class="input-area">
-            <input type="text" id="m-input" placeholder="Сообщение...">
-            <button onclick="send()" style="background:none; border:none; color:var(--accent); font-size:20px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        <div class="messages" id="msg-container"></div>
+        <div class="chat-input">
+            <input type="text" id="msg-input" placeholder="Сообщение..." style="margin:0;">
+            <button onclick="sendMsg()" style="width:50px;"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
 </div>
@@ -77,83 +95,80 @@
         messagingSenderId: "573728159190",
         appId: "1:573728159190:web:96856417745778a487ed53"
     };
-
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth(), db = firebase.database();
-    let user = null, chatId = null;
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    let selectedUser = null;
+
+    async function handleAuth(isLogin) {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('pass').value;
+        if(!e || !p) return alert("Заполни поля!");
+        try {
+            if(isLogin) await auth.signInWithEmailAndPassword(e, p);
+            else {
+                const res = await auth.createUserWithEmailAndPassword(e, p);
+                // ФИКС UNDEFINED: Записываем почту как имя
+                await db.ref('users/' + res.user.uid).set({ name: e, online: true });
+            }
+        } catch (err) { alert(err.message); }
     }
 
-    function authOp(type) {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(type === 'login') {
-            auth.signInWithEmailAndPassword(e,p).catch(a => alert(a.message));
-        } else {
-            auth.createUserWithEmailAndPassword(e,p).then(u => {
-                db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
-                db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
-            }).catch(a => alert(a.message));
-        }
-    }
-
-    auth.onAuthStateChanged(u => {
-        if(u) { user = u; show('scr-main'); loadChats(); }
-        else { show('scr-login'); }
+    auth.onAuthStateChanged(user => {
+        document.getElementById('scr-auth').classList.toggle('active', !user);
+        document.getElementById('scr-main').classList.toggle('active', !!user);
+        if(user) loadUsers();
     });
 
-    function loadChats() {
-        const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-item" onclick="openChat('global','Общий чат')"><div class="avatar">G</div><b>Общий чат</b></div>`;
-        db.ref('users/'+user.uid+'/contacts').on('value', s => {
-            s.forEach(c => {
-                db.ref('users/'+c.key).once('value', uS => {
-                    const ud = uS.val();
-                    const div = document.createElement('div');
-                    div.className = 'chat-item';
-                    div.onclick = () => openChat(c.key, ud.name);
-                    div.innerHTML = `<div class="avatar">${ud.name[0].toUpperCase()}</div><b>${ud.name}</b>`;
-                    list.appendChild(div);
-                });
+    function loadUsers() {
+        db.ref('users').on('value', snap => {
+            const list = document.getElementById('user-list'); list.innerHTML = '';
+            snap.forEach(u => {
+                if(u.key !== auth.currentUser.uid) {
+                    const name = u.val().name || "Пользователь";
+                    list.innerHTML += `
+                        <div class="user-item" onclick="openChat('${u.key}', '${name}')">
+                            <i class="fas fa-user-circle"></i>
+                            <span>${name}</span>
+                        </div>`;
+                }
             });
         });
     }
 
     function openChat(id, name) {
-        chatId = id === 'global' ? 'global' : [user.uid, id].sort().join("_");
-        document.getElementById('chat-title').innerText = name;
-        show('scr-chat');
-        db.ref('msgs/'+chatId).off();
-        const area = document.getElementById('messages');
-        area.innerHTML = '';
-        db.ref('msgs/'+chatId).on('child_added', s => {
-            const d = s.val();
-            const div = document.createElement('div');
-            div.className = `msg ${d.from === user.uid ? 'my' : 'their'}`;
-            div.innerText = d.txt;
-            area.appendChild(div);
-            area.scrollTop = area.scrollHeight;
+        selectedUser = id;
+        document.getElementById('chat-with-name').innerText = name;
+        document.getElementById('chat-window').classList.add('open');
+        loadMessages();
+    }
+
+    function closeChat() { document.getElementById('chat-window').classList.remove('open'); }
+
+    function sendMsg() {
+        const txt = document.getElementById('msg-input').value;
+        if(!txt || !selectedUser) return;
+        const chatId = [auth.currentUser.uid, selectedUser].sort().join('_');
+        db.ref('chats/' + chatId).push({
+            sender: auth.currentUser.uid,
+            text: txt,
+            time: Date.now()
+        });
+        document.getElementById('msg-input').value = '';
+    }
+
+    function loadMessages() {
+        const chatId = [auth.currentUser.uid, selectedUser].sort().join('_');
+        db.ref('chats/' + chatId).on('value', snap => {
+            const cont = document.getElementById('msg-container'); cont.innerHTML = '';
+            snap.forEach(m => {
+                const isMe = m.val().sender === auth.currentUser.uid;
+                cont.innerHTML += `<div class="msg ${isMe ? 'me' : 'them'}">${m.val().text}</div>`;
+            });
+            cont.scrollTop = cont.scrollHeight;
         });
     }
-
-    function send() {
-        const i = document.getElementById('m-input');
-        if(!i.value.trim()) return;
-        db.ref('msgs/'+chatId).push({from: user.uid, txt: i.value, time: Date.now()});
-        i.value = '';
-    }
-
-    function addUser() {
-        const e = prompt("Email:");
-        if(e) db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).once('value', s => {
-            if(s.exists()) db.ref('users/'+user.uid+'/contacts/'+s.val()).set(true);
-            else alert("Пользователь не найден");
-        });
-    }
-
-    document.getElementById('m-input').onkeypress = e => { if(e.key==='Enter') send(); };
 </script>
 </body>
 </html>
