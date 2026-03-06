@@ -2,124 +2,60 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MilkyWay Neon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MilkyWay Final Elite</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        
-        body { 
-            background: radial-gradient(circle at center, #0a1128 0%, #000 100%); 
-            color: #fff; font-family: 'Segoe UI', sans-serif; 
-            display: flex; justify-content: center; height: 100vh; overflow: hidden;
-        }
-
-        .app { 
-            width: 100%; max-width: 420px; height: 100%; 
-            background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; border-left: 1px solid #1f2937; border-right: 1px solid #1f2937;
-        }
-
-        .screen { display: none; flex-direction: column; height: 100%; }
+        body { background: #0b0e14; color: #e0e0e0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .app { width: 350px; height: 600px; background: #141923; border: 1px solid #1f2a3d; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .screen { display: none; flex-direction: column; height: 100%; padding: 20px; }
         .active { display: flex; }
-
-        /* ТОТ САМЫЙ НЕОНОВЫЙ ЛОГОТИП */
-        .neon-logo {
-            font-size: 42px; font-weight: 900; text-align: center;
-            background: linear-gradient(to right, #00d2ff, #3a7bd5);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
-            margin-bottom: 30px; letter-spacing: -1px;
-        }
-
-        /* Поля ввода в стиле Neon */
-        input {
-            width: 100%; height: 50px; background: rgba(0,0,0,0.4); 
-            border: 1px solid #30363d; border-radius: 12px; color: #fff;
-            padding: 0 15px; margin-bottom: 15px; outline: none; transition: 0.3s;
-        }
-        input:focus { border-color: #00d2ff; box-shadow: 0 0 10px rgba(0,210,255,0.2); }
-
-        .btn-neon {
-            width: 100%; padding: 15px; background: linear-gradient(45deg, #00d2ff, #3a7bd5);
-            border: none; border-radius: 12px; color: #fff; font-weight: bold;
-            text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 15px rgba(0,210,255,0.3);
-        }
-
-        header { 
-            padding: 20px; background: rgba(22, 27, 34, 0.9); 
-            display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid #30363d;
-        }
-
-        #chat-list { flex: 1; overflow-y: auto; }
-        .chat-card {
-            padding: 15px; margin: 10px; background: rgba(255,255,255,0.03);
-            border-radius: 15px; display: flex; align-items: center; gap: 15px;
-            cursor: pointer; border: 1px solid transparent; transition: 0.2s;
-        }
-        .chat-card:hover { background: rgba(255,255,255,0.07); border-color: #30363d; }
-        
-        .av-neon {
-            width: 45px; height: 45px; border-radius: 50%;
-            background: linear-gradient(45deg, #00d2ff, #92fe9d);
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
-
-        #messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-        .bubble { 
-            max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 14px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .my { align-self: flex-end; background: #005c4b; border-bottom-right-radius: 4px; }
-        .their { align-self: flex-start; background: #202c33; border-bottom-left-radius: 4px; }
-
-        .input-bar { padding: 15px; background: #161b22; display: flex; gap: 10px; align-items: center; }
-        .input-bar input { margin-bottom: 0; border-radius: 25px; }
+        .logo { font-size: 28px; color: #00a2ff; text-align: center; margin: 40px 0; font-weight: bold; }
+        input { background: #1c222d; border: 1px solid #30363d; padding: 12px; border-radius: 10px; color: white; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        button { background: #00a2ff; border: none; color: white; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        .user-item { padding: 15px; border-bottom: 1px solid #1f2a3d; cursor: pointer; }
+        #chat-view { position: absolute; top: 0; left: 100%; width: 100%; height: 100%; background: #141923; transition: 0.3s; display: flex; flex-direction: column; z-index: 5; }
+        #chat-view.open { left: 0; }
+        .messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .m { padding: 8px; border-radius: 8px; max-width: 80%; font-size: 14px; }
+        .m.me { background: #00a2ff; align-self: flex-end; }
+        .m.he { background: #1c222d; align-self: flex-start; }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <div id="scr-login" class="screen active" style="padding:40px; justify-content:center;">
-        <div class="neon-logo">MilkyWay</div>
-        <input type="email" id="email" placeholder="Космическая почта">
-        <input type="password" id="pass" placeholder="Пароль">
-        <button class="btn-neon" onclick="authOp('login')">Войти в систему</button>
-        <p onclick="authOp('reg')" style="text-align:center; margin-top:20px; font-size:13px; color:#8b949e; cursor:pointer;">Регистрация нового пилота</p>
+    <div id="auth" class="screen active">
+        <div class="logo">MilkyWay</div>
+        <input type="email" id="e" placeholder="Почта">
+        <input type="password" id="p" placeholder="Пароль (от 6 знаков)">
+        <button onclick="sign(true)">ВОЙТИ</button>
+        <button onclick="sign(false)" style="background:none; color:#555; font-size:12px;">Создать аккаунт</button>
     </div>
 
-    <div id="scr-main" class="screen">
-        <header>
-            <span style="font-weight:bold; font-size:20px;">Центр связи</span>
-            <i class="fas fa-sign-out-alt" onclick="auth.signOut()" style="opacity:0.6; cursor:pointer;"></i>
-        </header>
-        <div id="chat-list"></div>
-        <div style="padding:15px;">
-            <button class="btn-neon" onclick="addUser()">+ Найти пилота</button>
+    <div id="main" class="screen" style="padding:0;">
+        <div style="padding:15px; border-bottom:1px solid #1f2a3d; text-align:center; color:#00a2ff;">Чаты</div>
+        <div id="list" style="flex:1; overflow-y:auto;"></div>
+        <button onclick="auth.signOut()" style="background:#ff4b4b; border-radius:0;">ВЫЙТИ</button>
+    </div>
+
+    <div id="chat-view">
+        <div style="padding:15px; background:#1c222d; display:flex; justify-content:space-between;">
+            <span onclick="closeChat()" style="cursor:pointer;">⬅ Назад</span>
+            <span id="chat-title"></span>
         </div>
-    </div>
-
-    <div id="scr-chat" class="screen">
-        <header>
-            <div style="display:flex; align-items:center; gap:12px;">
-                <i class="fas fa-chevron-left" onclick="show('scr-main')" style="cursor:pointer;"></i>
-                <b id="chat-title">Чат</b>
-            </div>
-        </header>
-        <div id="messages"></div>
-        <div class="input-bar">
-            <input type="text" id="m-input" placeholder="Введите сообщение...">
-            <button onclick="send()" style="background:none; border:none; color:#00d2ff; font-size:24px; cursor:pointer;"><i class="fas fa-paper-plane"></i></button>
+        <div id="msgs" class="messages"></div>
+        <div style="padding:10px; display:flex; gap:5px;">
+            <input type="text" id="m-in" placeholder="Сообщение..." style="margin:0;">
+            <button onclick="send()" style="width:60px;">➤</button>
         </div>
     </div>
 </div>
 
 <script>
-    const firebaseConfig = {
+    const config = {
         apiKey: "AIzaSyA-bMCUsWhvoMO6uBMV9Z2NKZjvqFNwjeQ",
         authDomain: "wm-message.firebaseapp.com",
         databaseURL: "https://wm-message-default-rtdb.firebaseio.com",
@@ -128,76 +64,60 @@
         messagingSenderId: "573728159190",
         appId: "1:573728159190:web:96856417745778a487ed53"
     };
-
-    firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(config);
     const auth = firebase.auth(), db = firebase.database();
-    let me = null, activeId = null;
+    let curChat = null;
 
-    function show(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    function authOp(type) {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        if(type === 'login') auth.signInWithEmailAndPassword(e,p).catch(err => alert(err.message));
-        else auth.createUserWithEmailAndPassword(e,p).then(u => {
-            db.ref('users/'+u.user.uid).set({name: e.split('@')[0]});
-            db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).set(u.user.uid);
-        });
+    async function sign(isIn) {
+        const mail = document.getElementById('e').value, pass = document.getElementById('p').value;
+        try {
+            if(isIn) await auth.signInWithEmailAndPassword(mail, pass);
+            else {
+                const r = await auth.createUserWithEmailAndPassword(mail, pass);
+                await db.ref('users/' + r.user.uid).set({ name: mail });
+            }
+        } catch(e) { alert(e.message); }
     }
 
     auth.onAuthStateChanged(u => {
-        if(u) { me = u; show('scr-main'); load(); }
-        else show('scr-login');
+        document.getElementById('auth').classList.toggle('active', !u);
+        document.getElementById('main').classList.toggle('active', !!u);
+        if(u) loadUsers();
     });
 
-    function load() {
-        const list = document.getElementById('chat-list');
-        list.innerHTML = `<div class="chat-card" onclick="openChat('global','Общий чат')"><div class="av-neon">G</div><b>Общий чат</b></div>`;
-        db.ref('users/'+me.uid+'/contacts').on('value', s => {
-            s.forEach(c => {
-                db.ref('users/'+c.key).once('value', us => {
-                    const d = us.val();
-                    const div = document.createElement('div');
-                    div.className = 'chat-card';
-                    div.onclick = () => openChat(c.key, d.name);
-                    div.innerHTML = `<div class="av-neon">${d.name[0].toUpperCase()}</div><b>${d.name}</b>`;
-                    list.appendChild(div);
-                });
+    function loadUsers() {
+        db.ref('users').on('value', s => {
+            const l = document.getElementById('list'); l.innerHTML = '';
+            s.forEach(user => {
+                if(user.key !== auth.currentUser.uid) {
+                    l.innerHTML += `<div class="user-item" onclick="openChat('${user.key}','${user.val().name}')">👤 ${user.val().name}</div>`;
+                }
             });
         });
     }
 
     function openChat(id, name) {
-        activeId = id === 'global' ? 'global' : [me.uid, id].sort().join("_");
-        document.getElementById('chat-title').innerText = name;
-        show('scr-chat');
-        db.ref('msgs/'+activeId).off();
-        const area = document.getElementById('messages'); area.innerHTML = '';
-        db.ref('msgs/'+activeId).on('child_added', s => {
-            const m = s.val();
-            const d = document.createElement('div');
-            d.className = `bubble ${m.from === me.uid ? 'my' : 'their'}`;
-            d.innerText = m.txt;
-            area.appendChild(d); area.scrollTop = area.scrollHeight;
+        curChat = id; document.getElementById('chat-title').innerText = name;
+        document.getElementById('chat-view').classList.add('open');
+        const cId = [auth.currentUser.uid, id].sort().join('_');
+        db.ref('msgs/' + cId).on('value', s => {
+            const mBox = document.getElementById('msgs'); mBox.innerHTML = '';
+            s.forEach(m => {
+                const isMe = m.val().from === auth.currentUser.uid;
+                mBox.innerHTML += `<div class="m ${isMe?'me':'he'}">${m.val().txt}</div>`;
+            });
+            mBox.scrollTop = mBox.scrollHeight;
         });
     }
+
+    function closeChat() { document.getElementById('chat-view').classList.remove('open'); }
 
     function send() {
-        const i = document.getElementById('m-input');
-        if(!i.value.trim()) return;
-        db.ref('msgs/'+activeId).push({from: me.uid, txt: i.value, time: Date.now()});
-        i.value = '';
+        const t = document.getElementById('m-in').value; if(!t) return;
+        const cId = [auth.currentUser.uid, curChat].sort().join('_');
+        db.ref('msgs/' + cId).push({ from: auth.currentUser.uid, txt: t });
+        document.getElementById('m-in').value = '';
     }
-
-    function addUser() {
-        const e = prompt("Email пилота:");
-        if(e) db.ref('u_by_e/'+btoa(e).replace(/=/g,"")).once('value', s => {
-            if(s.exists()) db.ref('users/'+me.uid+'/contacts/'+s.val()).set(true);
-        });
-    }
-    document.getElementById('m-input').onkeypress = e => { if(e.key==='Enter') send(); };
 </script>
 </body>
 </html>
